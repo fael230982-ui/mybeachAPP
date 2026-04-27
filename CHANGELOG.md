@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-04-27 - Homologação interna
+
+- Adiciona `npm run validate`.
+- Adiciona `docs/HOMOLOGACAO.md`.
+- Adiciona metadados internos de versão, tag e contrato de API.
+- Inclui checklist operacional clicável na tela Conta.
+- Melhora visibilidade de ambiente ativo e fila offline.
+
 ## 2026-04-27 - Adoção da API Mbeach 1.2
 
 - Adota contratos remotos de consentimento parental em `/kids/guardian-consents`.

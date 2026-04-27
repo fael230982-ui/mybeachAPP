@@ -16,10 +16,12 @@ import { getFriendlyApiErrorMessage, isAuthError } from '@/services/api';
 import { fetchCurrentUserProfile, fetchUserProfile } from '@/services/auth';
 import {
   getApiBaseUrl,
+  getCurrentApiEnvironmentId,
   getApiEnvironmentOptions,
   getCurrentApiEnvironmentLabel,
   getEnvironmentStatus,
 } from '@/services/config';
+import { APP_RELEASE } from '@/constants/appInfo';
 import { LGPD_CONSENT_VERSION, MINOR_GUARDIAN_CONSENT_VERSION } from '@/constants/legal';
 import { getLiveHealth, getReadyHealth } from '@/services/health';
 import {
@@ -89,6 +91,33 @@ function isValidBirthDate(value: string) {
   return /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(new Date(`${value}T00:00:00`).getTime());
 }
 
+type HomologationCheckId =
+  | 'login'
+  | 'lgpd'
+  | 'kids'
+  | 'alert'
+  | 'map'
+  | 'tide'
+  | 'commerce'
+  | 'offlineQueue'
+  | 'health';
+
+const HOMOLOGATION_CHECKS: {
+  id: HomologationCheckId;
+  label: string;
+  detail: string;
+}[] = [
+  { id: 'login', label: 'Login', detail: 'Entrar com usuário cidadão válido.' },
+  { id: 'lgpd', label: 'LGPD', detail: 'Aceitar e revisar termos e privacidade.' },
+  { id: 'kids', label: 'Kids', detail: 'Validar consentimento, perfil, conteúdo e notificações.' },
+  { id: 'alert', label: 'Alerta', detail: 'Enviar alerta e verificar status/fila.' },
+  { id: 'map', label: 'Mapa', detail: 'Validar mapa e permissão de localização.' },
+  { id: 'tide', label: 'Maré', detail: 'Conferir tela de maré e dados exibidos.' },
+  { id: 'commerce', label: 'Comércios', detail: 'Conferir lista de comércios e estados vazios.' },
+  { id: 'offlineQueue', label: 'Fila offline', detail: 'Simular falha e confirmar sincronização posterior.' },
+  { id: 'health', label: 'Health check', detail: 'Rodar diagnóstico e conferir live/ready.' },
+];
+
 export default function AccountScreen() {
   const user = useAuthStore((state) => state.user);
   const accessToken = useAuthStore((state) => state.accessToken);
@@ -129,6 +158,17 @@ export default function AccountScreen() {
     'Health live: nao verificado',
     'Health ready: nao verificado',
   ]);
+  const [homologationChecks, setHomologationChecks] = useState<Record<HomologationCheckId, boolean>>({
+    login: false,
+    lgpd: false,
+    kids: false,
+    alert: false,
+    map: false,
+    tide: false,
+    commerce: false,
+    offlineQueue: false,
+    health: false,
+  });
 
   const expirationLabel = useMemo(() => formatTokenExpiration(accessToken), [accessToken]);
   const remainingSessionLabel = useMemo(() => formatRemainingSessionTime(expiresAt), [expiresAt]);
@@ -235,6 +275,9 @@ export default function AccountScreen() {
 
   const environmentOptions = useMemo(() => getApiEnvironmentOptions(), []);
   const environmentStatus = getEnvironmentStatus();
+  const currentEnvironmentId = getCurrentApiEnvironmentId();
+  const isHomologationEnvironment = currentEnvironmentId === 'homologation';
+  const completedHomologationChecks = HOMOLOGATION_CHECKS.filter((item) => homologationChecks[item.id]).length;
 
   useEffect(() => {
     void loadLocalSnapshot();
@@ -681,6 +724,13 @@ export default function AccountScreen() {
     setMessage(`Ambiente ${label} aplicado localmente.`);
   }
 
+  function toggleHomologationCheck(id: HomologationCheckId) {
+    setHomologationChecks((current) => ({
+      ...current,
+      [id]: !current[id],
+    }));
+  }
+
   async function handleReviewChildContent(contentId: string, approve: boolean) {
     if (accessToken && kidsCapability.features.childContent) {
       setRemoteChildrenLoading(true);
@@ -726,6 +776,54 @@ export default function AccountScreen() {
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.title}>Conta e diagnostico</Text>
       <Text style={styles.subtitle}>Sessao, expiracao do token, fila local e resumo pronto para reporte.</Text>
+
+      {isHomologationEnvironment ? (
+        <View style={styles.homologationBanner}>
+          <Text style={styles.homologationBannerTitle}>Ambiente de homologacao ativo</Text>
+          <Text style={styles.homologationBannerText}>
+            Use apenas usuarios e dados de teste neste endpoint.
+          </Text>
+        </View>
+      ) : null}
+
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>Rastreabilidade</Text>
+        <Text style={styles.item}>App: {APP_RELEASE.name}</Text>
+        <Text style={styles.item}>Versao: {APP_RELEASE.version}</Text>
+        <Text style={styles.item}>Tag interna: {APP_RELEASE.internalTag}</Text>
+        <Text style={styles.item}>Contrato API: {APP_RELEASE.apiContract}</Text>
+        <Text style={styles.item}>Ultima validacao registrada: {APP_RELEASE.lastValidatedAt}</Text>
+        <Text style={styles.item}>Ambiente: {getCurrentApiEnvironmentLabel()}</Text>
+        <Text style={styles.item}>Endpoint: {getApiBaseUrl()}</Text>
+        <Text style={styles.item}>Modo Kids: {kidsCapability.label}</Text>
+      </View>
+
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>Checklist de homologacao</Text>
+        <Text style={styles.helper}>
+          Progresso local desta sessão: {completedHomologationChecks}/{HOMOLOGATION_CHECKS.length}
+        </Text>
+        {HOMOLOGATION_CHECKS.map((item) => {
+          const checked = homologationChecks[item.id];
+          return (
+            <Pressable
+              key={item.id}
+              style={[styles.checkRow, checked && styles.checkRowDone]}
+              onPress={() => toggleHomologationCheck(item.id)}
+            >
+              <View style={[styles.checkMark, checked && styles.checkMarkDone]}>
+                <Text style={[styles.checkMarkText, checked && styles.checkMarkTextDone]}>
+                  {checked ? 'OK' : ''}
+                </Text>
+              </View>
+              <View style={styles.checkTextWrap}>
+                <Text style={styles.checkLabel}>{item.label}</Text>
+                <Text style={styles.checkDetail}>{item.detail}</Text>
+              </View>
+            </Pressable>
+          );
+        })}
+      </View>
 
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Sessao</Text>
@@ -983,6 +1081,18 @@ export default function AccountScreen() {
           ))}
         </View>
         <Text style={styles.item}>{queueText}</Text>
+        {queueDetails.length > 0 ? (
+          <View style={styles.queueNotice}>
+            <Text style={styles.queueNoticeTitle}>Fila offline ativa</Text>
+            <Text style={styles.queueNoticeText}>
+              Existem {queueDetails.length} item(ns) salvos neste aparelho para reenvio automático ou manual.
+            </Text>
+          </View>
+        ) : (
+          <View style={styles.queueNoticeOk}>
+            <Text style={styles.queueNoticeOkText}>Sem itens offline pendentes neste aparelho.</Text>
+          </View>
+        )}
         {message ? <Text style={styles.message}>{message}</Text> : null}
         <View style={styles.buttonRow}>
           <Pressable style={styles.secondaryButton} onPress={handleSaveApiBaseUrl}>
@@ -1077,6 +1187,23 @@ const styles = StyleSheet.create({
     color: '#64748b',
     lineHeight: 22,
   },
+  homologationBanner: {
+    borderRadius: 18,
+    backgroundColor: '#fef3c7',
+    borderWidth: 1,
+    borderColor: '#f59e0b',
+    padding: 16,
+    marginBottom: 18,
+  },
+  homologationBannerTitle: {
+    color: '#92400e',
+    fontWeight: '900',
+    marginBottom: 6,
+  },
+  homologationBannerText: {
+    color: '#92400e',
+    lineHeight: 20,
+  },
   card: {
     backgroundColor: '#fff',
     borderRadius: 24,
@@ -1098,6 +1225,54 @@ const styles = StyleSheet.create({
     color: '#64748b',
     lineHeight: 20,
     marginBottom: 12,
+  },
+  checkRow: {
+    flexDirection: 'row',
+    gap: 12,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    backgroundColor: '#f8fafc',
+    padding: 12,
+    marginBottom: 10,
+  },
+  checkRowDone: {
+    borderColor: '#86efac',
+    backgroundColor: '#f0fdf4',
+  },
+  checkMark: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    borderWidth: 2,
+    borderColor: '#cbd5e1',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  checkMarkDone: {
+    borderColor: '#16a34a',
+    backgroundColor: '#16a34a',
+  },
+  checkMarkText: {
+    color: '#64748b',
+    fontSize: 10,
+    fontWeight: '900',
+  },
+  checkMarkTextDone: {
+    color: '#ffffff',
+  },
+  checkTextWrap: {
+    flex: 1,
+  },
+  checkLabel: {
+    color: '#0f172a',
+    fontWeight: '900',
+    marginBottom: 4,
+  },
+  checkDetail: {
+    color: '#64748b',
+    lineHeight: 18,
+    fontSize: 13,
   },
   kidsRow: {
     paddingTop: 8,
@@ -1134,6 +1309,37 @@ const styles = StyleSheet.create({
     color: '#9a3412',
     lineHeight: 20,
     marginBottom: 8,
+  },
+  queueNotice: {
+    borderRadius: 16,
+    backgroundColor: '#fff7ed',
+    borderWidth: 1,
+    borderColor: '#fed7aa',
+    padding: 14,
+    marginTop: 4,
+    marginBottom: 12,
+  },
+  queueNoticeTitle: {
+    color: '#9a3412',
+    fontWeight: '900',
+    marginBottom: 4,
+  },
+  queueNoticeText: {
+    color: '#9a3412',
+    lineHeight: 20,
+  },
+  queueNoticeOk: {
+    borderRadius: 16,
+    backgroundColor: '#f0fdf4',
+    borderWidth: 1,
+    borderColor: '#bbf7d0',
+    padding: 12,
+    marginTop: 4,
+    marginBottom: 12,
+  },
+  queueNoticeOkText: {
+    color: '#166534',
+    fontWeight: '800',
   },
   environmentRow: {
     flexDirection: 'row',

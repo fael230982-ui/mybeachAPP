@@ -117,3 +117,11 @@ export function getCurrentApiEnvironmentLabel() {
 
   return 'Custom';
 }
+
+export function getCurrentApiEnvironmentId() {
+  const activeUrl = getApiBaseUrl();
+  const environments = getApiEnvironmentOptions();
+  const matched = environments.find((item) => item.url === activeUrl && item.available);
+
+  return matched?.id ?? 'custom';
+}

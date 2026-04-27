@@ -29,6 +29,7 @@ npm install
 npm test
 npm run lint
 npm run typecheck
+npm run validate
 npx expo start
 ```
 
@@ -43,6 +44,7 @@ npx expo start
 ## Documentação
 
 - [Setup](docs/SETUP.md)
+- [Homologação](docs/HOMOLOGACAO.md)
 - [Roadmap](ROADMAP.md)
 - [Checklist](CHECKLIST.md)
 - [Contribuição](CONTRIBUTING.md)

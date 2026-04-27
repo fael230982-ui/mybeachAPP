@@ -5,6 +5,7 @@
 - [x] Rodar testes aplicáveis.
 - [x] Rodar lint.
 - [x] Rodar typecheck.
+- [x] Rodar `npm run validate`.
 - [ ] Rodar build quando existir script dedicado no projeto.
 - [x] Verificar que segredos, chaves, tokens e credenciais não foram publicados.
 - [x] Preservar autoria e documentos do projeto.
@@ -22,6 +23,7 @@
 - [ ] Validar comércios.
 - [ ] Validar área Kids e consentimento do responsável.
 - [ ] Validar tela Conta, diagnóstico, health check e troca de ambiente.
+- [ ] Preencher checklist interno de homologação na tela Conta.
 - [ ] Revisar textos, acentuação e experiência do usuário.
 - [ ] Confirmar variáveis de ambiente necessárias.
 - [ ] Validar integração com API em ambiente apropriado.

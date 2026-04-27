@@ -29,6 +29,7 @@ import { AppError, getFriendlyApiErrorMessage, isAuthError } from '@/services/ap
 import {
   getApiBaseUrl,
   getBootstrapCitizenUserId,
+  getCurrentApiEnvironmentId,
   getCurrentApiEnvironmentLabel,
   hasApiAccessToken,
 } from '@/services/config';
@@ -129,6 +130,7 @@ export default function HomeScreen() {
 
   const isConfigured = Boolean(accessToken || hasApiAccessToken());
   const creatorUserId = authUser?.id ?? getBootstrapCitizenUserId();
+  const isHomologationEnvironment = getCurrentApiEnvironmentId() === 'homologation';
 
   const citiesByUf = useMemo(
     () => cities.filter((city) => city.uf === selectedEstado),
@@ -459,9 +461,12 @@ export default function HomeScreen() {
           {errorMessage ? <Text style={styles.errorBanner}>{errorMessage}</Text> : null}
           {queueSummary.total > 0 ? (
             <Text style={styles.queueBanner}>
-              Fila offline: {queueSummary.total} pendencia(s) - alertas {queueSummary.alerts} - pings {queueSummary.pings}
+              Fila offline ativa: {queueSummary.total} pendencia(s) salvas neste aparelho - alertas {queueSummary.alerts} - pings {queueSummary.pings}
               {queueSummary.nextRetryLabel ? ` - ${queueSummary.nextRetryLabel}` : ''}
             </Text>
+          ) : null}
+          {isHomologationEnvironment ? (
+            <Text style={styles.homologationBanner}>Homologacao ativa: use somente dados de teste.</Text>
           ) : null}
           <Text style={styles.environmentBanner}>Ambiente ativo: {getCurrentApiEnvironmentLabel()}</Text>
           <Text style={styles.endpointBanner}>Endpoint ativo: {getApiBaseUrl()}</Text>
@@ -959,6 +964,16 @@ const styles = StyleSheet.create({
     fontSize: 12,
     lineHeight: 18,
     fontWeight: '700',
+  },
+  homologationBanner: {
+    marginTop: 10,
+    color: '#92400e',
+    backgroundColor: '#fef3c7',
+    borderRadius: 14,
+    padding: 12,
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: '800',
   },
   endpointBanner: {
     marginTop: 10,

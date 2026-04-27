@@ -10,7 +10,8 @@
     "web": "expo start --web",
     "lint": "expo lint",
     "typecheck": "tsc --noEmit",
-    "test": "node ./scripts/run-tests.js"
+    "test": "node ./scripts/run-tests.js",
+    "validate": "npm test && npm run lint && npm run typecheck"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
