@@ -5,12 +5,23 @@
 - [x] Rodar testes aplicáveis.
 - [x] Rodar lint.
 - [x] Rodar typecheck.
+- [ ] Rodar build quando existir script dedicado no projeto.
 - [x] Verificar que segredos, chaves, tokens e credenciais não foram publicados.
 - [x] Preservar autoria e documentos do projeto.
 
 ## Antes de homologação
 
-- [ ] Validar fluxos principais no app.
+- [ ] Validar abertura do app e splash.
+- [ ] Validar aceite LGPD e reabertura após aceite.
+- [ ] Validar login do cidadão.
+- [ ] Validar cadastro do cidadão quando o backend estiver disponível.
+- [ ] Validar praia selecionada e persistência local.
+- [ ] Validar alertas, incluindo fila offline.
+- [ ] Validar mapa e permissão de localização.
+- [ ] Validar maré.
+- [ ] Validar comércios.
+- [ ] Validar área Kids e consentimento do responsável.
+- [ ] Validar tela Conta, diagnóstico, health check e troca de ambiente.
 - [ ] Revisar textos, acentuação e experiência do usuário.
 - [ ] Confirmar variáveis de ambiente necessárias.
 - [ ] Validar integração com API em ambiente apropriado.

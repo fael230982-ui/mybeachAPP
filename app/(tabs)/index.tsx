@@ -25,7 +25,7 @@ import {
 } from '@/services/alerts';
 import { getAlertStatusTone } from '@/constants/contracts';
 import { listBeaches, getBeachDetails, listCities } from '@/services/beaches';
-import { AppError, isAuthError } from '@/services/api';
+import { AppError, getFriendlyApiErrorMessage, isAuthError } from '@/services/api';
 import {
   getApiBaseUrl,
   getBootstrapCitizenUserId,
@@ -153,7 +153,7 @@ export default function HomeScreen() {
       setSelectedBeach(buildBeachData(beach, cityId));
       setErrorMessage(
         error instanceof AppError
-          ? `${error.message} A praia foi carregada sem detalhes operacionais.`
+          ? `${getFriendlyApiErrorMessage(error)} A praia foi carregada sem detalhes operacionais.`
           : 'Praia carregada sem detalhes operacionais.'
       );
     } finally {
@@ -223,9 +223,7 @@ export default function HomeScreen() {
             clearSession();
           }
           setSelectedBeach(defaultBeachData);
-          setErrorMessage(
-            error instanceof AppError ? error.message : 'Falha ao carregar os dados iniciais do backend.'
-          );
+          setErrorMessage(getFriendlyApiErrorMessage(error));
         }
       } finally {
         if (isMounted) {
@@ -393,7 +391,7 @@ export default function HomeScreen() {
 
       const message =
         error instanceof AppError
-          ? `${error.message} O alerta foi colocado na fila offline.`
+          ? `${getFriendlyApiErrorMessage(error)} O alerta foi colocado na fila offline.`
           : 'Falha de rede. O alerta foi colocado na fila offline.';
       Alert.alert('Alerta em fila', message);
     } finally {

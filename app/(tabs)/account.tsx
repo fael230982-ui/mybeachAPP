@@ -12,9 +12,14 @@ import {
   View,
 } from 'react-native';
 
-import { isAuthError } from '@/services/api';
+import { getFriendlyApiErrorMessage, isAuthError } from '@/services/api';
 import { fetchCurrentUserProfile, fetchUserProfile } from '@/services/auth';
-import { getApiBaseUrl, getApiEnvironmentOptions, getCurrentApiEnvironmentLabel } from '@/services/config';
+import {
+  getApiBaseUrl,
+  getApiEnvironmentOptions,
+  getCurrentApiEnvironmentLabel,
+  getEnvironmentStatus,
+} from '@/services/config';
 import { LGPD_CONSENT_VERSION, MINOR_GUARDIAN_CONSENT_VERSION } from '@/constants/legal';
 import { getLiveHealth, getReadyHealth } from '@/services/health';
 import {
@@ -217,6 +222,7 @@ export default function AccountScreen() {
   }, []);
 
   const environmentOptions = useMemo(() => getApiEnvironmentOptions(), []);
+  const environmentStatus = getEnvironmentStatus();
 
   useEffect(() => {
     void loadLocalSnapshot();
@@ -268,7 +274,7 @@ export default function AccountScreen() {
         clearSession();
         setMessage('Sessao invalida ou sem permissao. O login local foi encerrado.');
       } else {
-        setMessage('Nao foi possivel sincronizar os perfis infantis remotos agora.');
+        setMessage(getFriendlyApiErrorMessage(error));
       }
     } finally {
       setRemoteChildrenLoading(false);
@@ -314,7 +320,7 @@ export default function AccountScreen() {
         clearSession();
         setMessage('Sessao invalida ou sem permissao. O login local foi encerrado.');
       } else {
-        setMessage('Nao foi possivel concluir o diagnostico da API neste momento.');
+        setMessage(getFriendlyApiErrorMessage(error));
       }
     } finally {
       setLoading(false);
@@ -334,7 +340,7 @@ export default function AccountScreen() {
         clearSession();
         setMessage('Sessao invalida ou sem permissao. O login local foi encerrado.');
       } else {
-        setMessage('Nao foi possivel sincronizar a fila offline agora.');
+        setMessage(getFriendlyApiErrorMessage(error));
       }
     } finally {
       setLoading(false);
@@ -417,7 +423,7 @@ export default function AccountScreen() {
           return;
         }
 
-        setMessage('Falha ao criar perfil infantil remoto. O app manteve o fallback local seguro.');
+        setMessage(`${getFriendlyApiErrorMessage(error)} O app manteve o fallback local seguro.`);
       } finally {
         setRemoteChildrenLoading(false);
       }
@@ -465,7 +471,7 @@ export default function AccountScreen() {
         clearSession();
         setMessage('Sessao invalida ou sem permissao. O login local foi encerrado.');
       } else {
-        setMessage('Nao foi possivel atualizar o perfil infantil remoto.');
+        setMessage(getFriendlyApiErrorMessage(error));
       }
     } finally {
       setRemoteChildrenLoading(false);
@@ -491,7 +497,7 @@ export default function AccountScreen() {
         clearSession();
         setMessage('Sessao invalida ou sem permissao. O login local foi encerrado.');
       } else {
-        setMessage('Nao foi possivel remover o perfil infantil remoto.');
+        setMessage(getFriendlyApiErrorMessage(error));
       }
     } finally {
       setRemoteChildrenLoading(false);
@@ -774,6 +780,14 @@ export default function AccountScreen() {
         <Text style={styles.cardTitle}>API</Text>
         <Text style={styles.item}>Base URL ativa: {getApiBaseUrl()}</Text>
         <Text style={styles.item}>Ambiente ativo: {getCurrentApiEnvironmentLabel()}</Text>
+        <Text style={environmentStatus.ready ? styles.statusOk : styles.statusWarning}>
+          Ambiente: {environmentStatus.ready ? 'pronto para uso' : 'configuracao incompleta'}
+        </Text>
+        {environmentStatus.warnings.map((warning) => (
+          <Text key={warning} style={styles.warningText}>
+            {warning}
+          </Text>
+        ))}
         {healthLines.map((line) => (
           <Text key={line} style={styles.item}>
             {line}
@@ -945,6 +959,21 @@ const styles = StyleSheet.create({
     marginTop: 12,
     color: '#0f172a',
     lineHeight: 20,
+  },
+  statusOk: {
+    color: '#166534',
+    fontWeight: '800',
+    marginBottom: 8,
+  },
+  statusWarning: {
+    color: '#9a3412',
+    fontWeight: '800',
+    marginBottom: 8,
+  },
+  warningText: {
+    color: '#9a3412',
+    lineHeight: 20,
+    marginBottom: 8,
   },
   environmentRow: {
     flexDirection: 'row',

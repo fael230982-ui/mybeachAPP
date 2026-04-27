@@ -37,6 +37,30 @@ export function resolveAuthTokenType(authTokenType?: string | null) {
   return authTokenType ?? getStoredTokenType() ?? 'Bearer';
 }
 
+export function getFriendlyApiErrorMessage(error: unknown) {
+  if (error instanceof AppError) {
+    if (error.code === 'API_TOKEN_MISSING') {
+      return 'Sessao ou token de API ausente. Entre novamente ou configure o ambiente antes de continuar.';
+    }
+
+    if (error.code === 'AUTH_UNAUTHORIZED') {
+      return 'Sessao expirada ou nao autorizada. Entre novamente para continuar.';
+    }
+
+    if (error.code === 'AUTH_FORBIDDEN') {
+      return 'Seu usuario nao tem permissao para esta operacao.';
+    }
+
+    return error.message;
+  }
+
+  if (error instanceof TypeError) {
+    return 'Nao foi possivel conectar com a API. Verifique internet, endpoint ativo e ambiente configurado.';
+  }
+
+  return 'Nao foi possivel concluir a operacao neste momento.';
+}
+
 function buildHeaders(
   headers?: Record<string, string>,
   requireAuth?: boolean,
@@ -65,10 +89,16 @@ function buildHeaders(
 }
 
 export async function apiRequest<T>(path: string, options: RequestOptions = {}): Promise<T> {
-  const response = await fetch(`${getApiBaseUrl()}${path}`, {
-    ...options,
-    headers: buildHeaders(options.headers, options.requireAuth, options.authToken, options.authTokenType),
-  });
+  let response: Response;
+
+  try {
+    response = await fetch(`${getApiBaseUrl()}${path}`, {
+      ...options,
+      headers: buildHeaders(options.headers, options.requireAuth, options.authToken, options.authTokenType),
+    });
+  } catch (error) {
+    throw new AppError(getFriendlyApiErrorMessage(error), 'API_NETWORK_ERROR');
+  }
 
   if (!response.ok) {
     const text = await response.text();

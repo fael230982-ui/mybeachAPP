@@ -13,7 +13,8 @@ import {
 } from 'react-native';
 
 import { loginCitizen, registerCitizen } from '@/services/auth';
-import { AppError } from '@/services/api';
+import { getFriendlyApiErrorMessage } from '@/services/api';
+import { getApiBaseUrl, getEnvironmentStatus } from '@/services/config';
 import { useAuthStore } from '@/stores/authStore';
 
 type AuthMode = 'login' | 'register';
@@ -37,6 +38,7 @@ export default function AuthScreen() {
   const normalizedEmail = email.trim().toLowerCase();
   const normalizedName = name.trim();
   const normalizedPassword = password;
+  const environmentStatus = useMemo(() => getEnvironmentStatus(), []);
 
   async function handleSubmit() {
     if (!normalizedEmail || !normalizedEmail.includes('@')) {
@@ -72,9 +74,7 @@ export default function AuthScreen() {
       const session = await loginCitizen({ email: normalizedEmail, password: normalizedPassword });
       setSession(session);
     } catch (error) {
-      setErrorMessage(
-        error instanceof AppError ? error.message : 'Nao foi possivel autenticar no momento.'
-      );
+      setErrorMessage(getFriendlyApiErrorMessage(error));
     } finally {
       setIsSubmitting(false);
     }
@@ -114,6 +114,14 @@ export default function AuthScreen() {
           <Text style={styles.legalHint}>
             O uso do app depende do aceite previo do Termo de Uso e do Aviso de Privacidade.
           </Text>
+          <View style={[styles.environmentBox, environmentStatus.warnings.length > 0 && styles.environmentBoxWarning]}>
+            <Text style={styles.environmentText}>API: {getApiBaseUrl()}</Text>
+            {environmentStatus.warnings.slice(0, 1).map((warning) => (
+              <Text key={warning} style={styles.environmentWarning}>
+                {warning}
+              </Text>
+            ))}
+          </View>
           <View style={styles.brandStrip}>
             <Text style={styles.brandStripItem}>Seguranca de praia</Text>
             <Text style={styles.brandStripDivider}>|</Text>
@@ -297,6 +305,33 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     textAlign: 'center',
     maxWidth: 320,
+  },
+  environmentBox: {
+    marginTop: 14,
+    borderRadius: 16,
+    backgroundColor: '#ffffff',
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    width: '100%',
+    maxWidth: 360,
+  },
+  environmentBoxWarning: {
+    borderWidth: 1,
+    borderColor: '#fed7aa',
+    backgroundColor: '#fff7ed',
+  },
+  environmentText: {
+    color: '#0f172a',
+    fontSize: 12,
+    fontWeight: '800',
+    textAlign: 'center',
+  },
+  environmentWarning: {
+    marginTop: 6,
+    color: '#9a3412',
+    fontSize: 12,
+    lineHeight: 18,
+    textAlign: 'center',
   },
   brandStrip: {
     flexDirection: 'row',

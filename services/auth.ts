@@ -1,4 +1,4 @@
-import { AppError, apiRequest } from './api';
+import { AppError, apiRequest, getFriendlyApiErrorMessage } from './api';
 import { getApiBaseUrl } from './config';
 import { decodeJwtPayload } from './jwt';
 
@@ -72,18 +72,24 @@ export async function loginCitizen(payload: LoginPayload) {
     password: payload.password,
   });
 
-  const response = await fetch(`${getApiBaseUrl()}/auth/login`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      Accept: 'application/json',
-    },
-    body: formBody.toString(),
-  });
+  let response: Response;
+
+  try {
+    response = await fetch(`${getApiBaseUrl()}/auth/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        Accept: 'application/json',
+      },
+      body: formBody.toString(),
+    });
+  } catch (error) {
+    throw new AppError(getFriendlyApiErrorMessage(error), 'API_NETWORK_ERROR');
+  }
 
   if (!response.ok) {
     const text = await response.text();
-    throw new AppError(text || 'Falha ao autenticar cidadão.', 'AUTH_LOGIN_FAILED', response.status);
+    throw new AppError(text || 'Falha ao autenticar cidadao.', 'AUTH_LOGIN_FAILED', response.status);
   }
 
   const data = await response.json();

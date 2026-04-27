@@ -16,6 +16,8 @@ const fallbackApiBaseUrl =
   extra.apiBaseUrl ??
   'https://api.mybeach.com.br';
 
+const hasExplicitApiBaseUrl = Boolean(process.env.EXPO_PUBLIC_API_BASE_URL ?? extra.apiBaseUrl);
+
 const fallbackHomologApiBaseUrl =
   process.env.EXPO_PUBLIC_API_BASE_URL_HOMOLOG ??
   extra.apiBaseUrlHomolog ??
@@ -37,6 +39,40 @@ export function getApiBaseUrl() {
 
 export function hasApiAccessToken() {
   return Boolean(apiAccessToken);
+}
+
+export function getEnvironmentStatus() {
+  const activeApiBaseUrl = getApiBaseUrl();
+  const hasCustomApiBaseUrl = Boolean(getStoredApiBaseUrl());
+  const missing: string[] = [];
+  const warnings: string[] = [];
+
+  if (!activeApiBaseUrl) {
+    missing.push('EXPO_PUBLIC_API_BASE_URL');
+  }
+
+  if (!apiAccessToken) {
+    warnings.push('EXPO_PUBLIC_API_ACCESS_TOKEN ausente: login por e-mail e senha continua disponivel, mas diagnosticos protegidos dependem de sessao autenticada.');
+  }
+
+  if (!citizenUserId) {
+    warnings.push('EXPO_PUBLIC_CITIZEN_USER_ID ausente: recursos legados baseados em usuario fixo ficam indisponiveis.');
+  }
+
+  if (!hasExplicitApiBaseUrl && !hasCustomApiBaseUrl) {
+    warnings.push('EXPO_PUBLIC_API_BASE_URL nao definido: usando fallback de producao.');
+  }
+
+  return {
+    ready: missing.length === 0,
+    activeApiBaseUrl,
+    hasExplicitApiBaseUrl,
+    hasCustomApiBaseUrl,
+    hasApiAccessToken: Boolean(apiAccessToken),
+    hasCitizenUserId: Boolean(citizenUserId),
+    missing,
+    warnings,
+  };
 }
 
 export function getBootstrapCitizenUserId() {
