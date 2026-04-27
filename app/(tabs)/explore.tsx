@@ -18,8 +18,8 @@ export default function ExploreScreen() {
       <View style={styles.summaryCard}>
         <Text style={styles.summaryEyebrow}>CONTEXTO ATIVO</Text>
         <Text style={styles.summaryTitle}>{currentBeach.name}</Text>
-        <Text style={styles.summaryText}>Cidade: {currentBeach.cityId ?? 'nao informada'}.</Text>
-        <Text style={styles.summaryText}>Atualizacao local: {currentBeach.updatedAt}.</Text>
+        <Text style={styles.summaryText}>Cidade: {currentBeach.cityId ?? 'não informada'}.</Text>
+        <Text style={styles.summaryText}>Atualização local: {currentBeach.updatedAt}.</Text>
         <Text style={styles.summaryText}>Bandeira atual: {currentBeach.flag.toUpperCase()}.</Text>
       </View>
 
@@ -39,7 +39,7 @@ function SectionCard({ title, items }: { title: string; items: string[] }) {
       <View style={styles.card}>
         {items.map((item) => (
           <View key={item} style={styles.row}>
-            <Text style={styles.bullet}>•</Text>
+            <Text style={styles.bullet}>-</Text>
             <Text style={styles.itemText}>{item}</Text>
           </View>
         ))}

@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-04-27 - v0.1.1
+
+- Revisa textos visíveis das telas principais.
+- Melhora estados vazios de comércios, maré, mapa e Conta.
+- Adiciona documento de evidência de homologação.
+- Prepara tag interna `v0.1.1`.
+
 ## 2026-04-27 - Adoção da API Mbeach 1.3
 
 - Atualiza contrato interno para `API Mbeach 1.3`.

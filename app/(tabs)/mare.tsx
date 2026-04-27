@@ -7,8 +7,8 @@ import { defaultBeachData, useBeachStore } from '@/stores/beachStore';
 function buildSeaStatus(flag: string, waves: string, wind: string) {
   if (flag === 'vermelha') {
     return {
-      title: 'Atencao maxima',
-      detail: `Bandeira ${flag}. Priorize observacao e acione ajuda ao primeiro sinal de risco.`,
+      title: 'Atenção máxima',
+      detail: `Bandeira ${flag}. Priorize observação e acione ajuda ao primeiro sinal de risco.`,
       accent: '#b91c1c',
       surface: '#fee2e2',
     };
@@ -16,15 +16,15 @@ function buildSeaStatus(flag: string, waves: string, wind: string) {
 
   if (flag === 'amarela') {
     return {
-      title: 'Atencao reforcada',
-      detail: `Ondas ${waves} e vento ${wind}. Oriente banhistas a respeitar a sinalizacao local.`,
+      title: 'Atenção reforçada',
+      detail: `Ondas ${waves} e vento ${wind}. Oriente banhistas a respeitar a sinalização local.`,
       accent: '#a16207',
       surface: '#fef3c7',
     };
   }
 
   return {
-    title: 'Condicao monitorada',
+    title: 'Condição monitorada',
     detail: `Ondas ${waves}, vento ${wind} e monitoramento local ativo para a praia selecionada.`,
     accent: '#0369a1',
     surface: '#e0f2fe',
@@ -34,8 +34,8 @@ function buildSeaStatus(flag: string, waves: string, wind: string) {
 function buildCoverageLabel(waves: string, updatedAt: string) {
   const hasWaveData = waves !== '--';
   return hasWaveData
-    ? `Ultima janela recebida do backend: ${updatedAt}.`
-    : 'Sem leitura detalhada de mare. O app exibe apenas os sinais operacionais ja sincronizados.';
+    ? `Última janela recebida do backend: ${updatedAt}.`
+    : 'Sem leitura detalhada de maré. O app exibe apenas os sinais operacionais já sincronizados.';
 }
 
 export default function MareScreen() {
@@ -70,14 +70,14 @@ export default function MareScreen() {
 
       <View style={styles.metricsGrid}>
         <MetricCard label="Temperatura" value={selectedBeach.temp} helper="Contexto local atual" />
-        <MetricCard label="UV" value={selectedBeach.uv} helper="Exposicao ambiental" />
+        <MetricCard label="UV" value={selectedBeach.uv} helper="Exposição ambiental" />
       </View>
 
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Cobertura atual</Text>
         <Text style={styles.cardText}>{buildCoverageLabel(selectedBeach.waves, selectedBeach.updatedAt)}</Text>
         <Text style={styles.cardText}>
-          O app ainda nao calcula baixa-mar e preamar porque esse contrato nao foi publicado no backend atual.
+          O app ainda não calcula baixa-mar e preamar porque esse contrato não foi publicado no backend atual.
         </Text>
       </View>
 

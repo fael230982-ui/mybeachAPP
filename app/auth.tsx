@@ -31,7 +31,7 @@ export default function AuthScreen() {
   const setSession = useAuthStore((state) => state.setSession);
 
   const title = useMemo(
-    () => (mode === 'login' ? 'Entrar no MyBeach' : 'Criar conta do cidadao'),
+    () => (mode === 'login' ? 'Entrar no MyBeach' : 'Criar conta do cidadão'),
     [mode]
   );
 
@@ -109,10 +109,10 @@ export default function AuthScreen() {
           <Text style={styles.kicker}>MYBEACH CIDADAO</Text>
           <Text style={styles.title}>{title}</Text>
           <Text style={styles.subtitle}>
-            Acesso oficial ao ecossistema MyBeach com sessao local persistida e fluxo pronto para operacao.
+            Acesso oficial ao ecossistema MyBeach com sessão local persistida e fluxo pronto para operação.
           </Text>
           <Text style={styles.legalHint}>
-            O uso do app depende do aceite previo do Termo de Uso e do Aviso de Privacidade.
+            O uso do app depende do aceite prévio do Termo de Uso e do Aviso de Privacidade.
           </Text>
           <View style={[styles.environmentBox, environmentStatus.warnings.length > 0 && styles.environmentBoxWarning]}>
             <Text style={styles.environmentText}>API: {getApiBaseUrl()}</Text>
@@ -123,7 +123,7 @@ export default function AuthScreen() {
             ))}
           </View>
           <View style={styles.brandStrip}>
-            <Text style={styles.brandStripItem}>Seguranca de praia</Text>
+            <Text style={styles.brandStripItem}>Segurança de praia</Text>
             <Text style={styles.brandStripDivider}>|</Text>
             <Text style={styles.brandStripItem}>Alerta rapido</Text>
             <Text style={styles.brandStripDivider}>|</Text>

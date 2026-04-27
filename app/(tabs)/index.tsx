@@ -46,9 +46,9 @@ import { useAuthStore } from '@/stores/authStore';
 const { width, height } = Dimensions.get('window');
 
 const guidanceByType: Record<AlertType, string[]> = {
-  DROWNING: ['Mantenha contato visual.', 'Nao entre na agua.', 'Aponte a vitima para os guarda-vidas.'],
+  DROWNING: ['Mantenha contato visual.', 'Não entre na água.', 'Aponte a vítima para os guarda-vidas.'],
   MEDICAL: ['Afaste curiosos.', 'Informe sinais visiveis para a equipe.', 'Mantenha o local livre para atendimento.'],
-  LOST_CHILD: ['Procure um guarda-vidas proximo.', 'Nao saia da area informada.', 'Descreva roupas, idade e sinais da crianca.'],
+  LOST_CHILD: ['Procure um guarda-vidas próximo.', 'Não saia da área informada.', 'Descreva roupas, idade e sinais da criança.'],
 };
 
 function mapRiskLevelToFlag(riskLevel?: string | null) {
@@ -87,13 +87,13 @@ function buildBeachData(beach: Beach, cityId: string | null, details?: Awaited<R
       : 'Agora',
     curiosidades: [
       `Monitoramento operacional da praia ${beach.name}.`,
-      cityId ? `Cidade vinculada ao cadastro: ${cityId}.` : 'Cidade ainda nao vinculada localmente.',
+      cityId ? `Cidade vinculada ao cadastro: ${cityId}.` : 'Cidade ainda não vinculada localmente.',
     ],
     ruas: ['Integracao detalhada de vias ainda pendente no backend.'],
-    pontosTuristicos: [`Dados turisticos de ${beach.name} ainda nao foram sincronizados.`],
-    locaisInstagramaveis: [`Pontos visuais de ${beach.name} ainda nao foram sincronizados.`],
+    pontosTuristicos: [`Dados turísticos de ${beach.name} ainda não foram sincronizados.`],
+    locaisInstagramaveis: [`Pontos visuais de ${beach.name} ainda não foram sincronizados.`],
     regrasDaPraia: ['Siga a sinalizacao oficial.', 'Procure os guarda-vidas em caso de risco.'],
-    comerciosSugeridos: ['Nenhum comercio validado foi sincronizado para esta praia.'],
+    comerciosSugeridos: ['Nenhum comércio validado foi sincronizado para esta praia.'],
   };
 }
 
@@ -330,7 +330,7 @@ export default function HomeScreen() {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
-        throw new AppError('Permita o uso da localizacao para abrir um alerta.', 'LOCATION_DENIED');
+        throw new AppError('Permita o uso da localização para abrir um alerta.', 'LOCATION_DENIED');
       }
 
       const position = await Location.getCurrentPositionAsync({
@@ -426,7 +426,7 @@ export default function HomeScreen() {
             </View>
             <View style={styles.brandTextWrap}>
               <Text style={styles.brandTitle}>MyBeach</Text>
-              <Text style={styles.brandSubtitle}>Operacao do cidadao</Text>
+              <Text style={styles.brandSubtitle}>Operação do cidadão</Text>
             </View>
           </View>
           <View style={styles.brandTagsRow}>
@@ -617,7 +617,7 @@ export default function HomeScreen() {
                   </View>
                   {item.beachId || item.cityId ? (
                     <Text style={styles.historyMeta}>
-                      {item.beachId ? `Praia ${item.beachId}` : 'Praia nao informada'}
+                      {item.beachId ? `Praia ${item.beachId}` : 'Praia não informada'}
                       {item.cityId ? ` - Cidade ${item.cityId}` : ''}
                     </Text>
                   ) : null}

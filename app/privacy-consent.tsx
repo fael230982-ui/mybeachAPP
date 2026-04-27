@@ -39,7 +39,7 @@ export default function PrivacyConsentScreen() {
       } catch {
         Alert.alert(
           'Aceite local registrado',
-          'Nao foi possivel registrar o aceite remoto agora. O aceite local sera mantido neste aparelho.'
+          'Não foi possível registrar o aceite remoto agora. O aceite local será mantido neste aparelho.'
         );
       }
     }
@@ -55,9 +55,9 @@ export default function PrivacyConsentScreen() {
         <Text style={styles.kicker}>LGPD E PRIMEIRO ACESSO</Text>
         <Text style={styles.title}>Termo de Uso e Aviso de Privacidade</Text>
         <Text style={styles.subtitle}>
-          Antes de usar o app, registre o aceite desta versao dos termos e do aviso de privacidade.
+          Antes de usar o app, registre o aceite desta versão dos termos e do aviso de privacidade.
         </Text>
-        <Text style={styles.version}>Versao do aceite: {LGPD_CONSENT_VERSION}</Text>
+        <Text style={styles.version}>Versão do aceite: {LGPD_CONSENT_VERSION}</Text>
       </View>
 
       <LegalSection title="Termo de Uso" items={LEGAL_SUMMARY.terms} />
@@ -74,8 +74,8 @@ export default function PrivacyConsentScreen() {
       <View style={styles.noticeBox}>
         <Text style={styles.noticeTitle}>Importante</Text>
         <Text style={styles.noticeText}>
-          O app trata dados de identificacao, autenticacao, localizacao e eventos operacionais para resposta de emergencia,
-          seguranca e melhoria do atendimento. O uso continua sujeito a revisoes futuras dos termos.
+          O app trata dados de identificação, autenticação, localização e eventos operacionais para resposta de emergência,
+          segurança e melhoria do atendimento. O uso continua sujeito a revisões futuras dos termos.
         </Text>
       </View>
 
@@ -84,7 +84,7 @@ export default function PrivacyConsentScreen() {
       </Pressable>
 
       <Text style={styles.footerText}>
-        Se voce nao concordar, nao prossiga com o uso do aplicativo.
+        Se você não concordar, não prossiga com o uso do aplicativo.
       </Text>
     </ScrollView>
   );

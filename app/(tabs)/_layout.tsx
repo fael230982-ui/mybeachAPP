@@ -76,7 +76,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="mare"
         options={{
-          title: 'Mare',
+          title: 'Maré',
           tabBarIcon: ({ color }) => <Ionicons name="water" size={24} color={color} />,
         }}
       />
@@ -90,7 +90,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="comercios"
         options={{
-          title: 'Comercios',
+          title: 'Comércios',
           tabBarIcon: ({ color }) => <Ionicons name="cart" size={24} color={color} />,
         }}
       />

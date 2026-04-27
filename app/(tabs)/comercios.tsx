@@ -5,7 +5,12 @@ import { defaultBeachData, useBeachStore } from '@/stores/beachStore';
 
 function isOperationalPlaceholder(item: string) {
   const normalized = item.toLowerCase();
-  return normalized.includes('nenhum comercio') || normalized.includes('nao foi sincronizado');
+  return (
+    normalized.includes('nenhum comercio') ||
+    normalized.includes('nenhum comércio') ||
+    normalized.includes('nao foi sincronizado') ||
+    normalized.includes('não foi sincronizado')
+  );
 }
 
 export default function ComerciosScreen() {
@@ -19,36 +24,36 @@ export default function ComerciosScreen() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.header}>
-        <Text style={styles.title}>Comercios em {currentBeach.name}</Text>
-        <Text style={styles.subtitle}>Somente itens ligados a praia selecionada no momento.</Text>
+        <Text style={styles.title}>Comércios em {currentBeach.name}</Text>
+        <Text style={styles.subtitle}>Somente itens ligados à praia selecionada no momento.</Text>
       </View>
 
       <View style={[styles.statusCard, hasCoverage ? styles.statusCardOnline : styles.statusCardPending]}>
         <Text style={styles.statusEyebrow}>{hasCoverage ? 'COBERTURA LOCAL' : 'COBERTURA PENDENTE'}</Text>
         <Text style={styles.statusTitle}>
-          {hasCoverage ? 'Lista operacional disponivel' : 'Sem fonte validada de comercios'}
+          {hasCoverage ? 'Lista operacional disponível' : 'Sem fonte validada de comércios'}
         </Text>
         <Text style={styles.statusText}>
           {hasCoverage
             ? 'A aba passa a mostrar apenas itens efetivamente vinculados ao contexto atual da praia.'
-            : 'O app evita descrever estabelecimentos sem origem validada. Quando o backend publicar a fonte canonica, esta tela pode ser preenchida sem inventar catalogo.'}
+            : 'O app evita descrever estabelecimentos sem origem validada. Quando o backend publicar a fonte canônica, esta tela pode ser preenchida sem inventar catálogo.'}
         </Text>
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>Itens disponiveis</Text>
+        <Text style={styles.cardTitle}>Itens disponíveis</Text>
         {hasCoverage ? (
           syncedItems.map((item) => (
             <View key={item} style={styles.itemRow}>
-              <Text style={styles.itemBullet}>•</Text>
+              <Text style={styles.itemBullet}>-</Text>
               <Text style={styles.itemText}>{item}</Text>
             </View>
           ))
         ) : (
           <>
-            <Text style={styles.emptyTitle}>Nenhum comercio sincronizado para {currentBeach.name}</Text>
+            <Text style={styles.emptyTitle}>Nenhum comércio sincronizado para {currentBeach.name}</Text>
             <Text style={styles.emptyText}>
-              A tela permanece intencionalmente conservadora para nao misturar recomendacao com placeholder.
+              A tela permanece intencionalmente conservadora para não misturar recomendação com placeholder.
             </Text>
           </>
         )}
@@ -57,10 +62,10 @@ export default function ComerciosScreen() {
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Contexto operacional</Text>
         <Text style={styles.contextText}>Praia atual: {currentBeach.name}</Text>
-        <Text style={styles.contextText}>Cidade vinculada: {currentBeach.cityId ?? 'nao informada'}</Text>
-        <Text style={styles.contextText}>Atualizacao de praia: {currentBeach.updatedAt}</Text>
+        <Text style={styles.contextText}>Cidade vinculada: {currentBeach.cityId ?? 'não informada'}</Text>
+        <Text style={styles.contextText}>Atualização de praia: {currentBeach.updatedAt}</Text>
         <Text style={styles.contextText}>
-          Proximo passo ideal: consumir uma rota oficial de catalogo por praia em vez de manter bloco estatico.
+          Próximo passo ideal: consumir uma rota oficial de catálogo por praia em vez de manter bloco estático.
         </Text>
       </View>
     </ScrollView>

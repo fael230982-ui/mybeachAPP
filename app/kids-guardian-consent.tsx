@@ -32,7 +32,7 @@ export default function KidsGuardianConsentScreen() {
 
   async function handleAccept() {
     if (!guardianName.trim() || !guardianDocument.trim() || !relationship.trim()) {
-      Alert.alert('Dados incompletos', 'Informe nome, documento do responsavel e vinculo antes de continuar.');
+      Alert.alert('Dados incompletos', 'Informe nome, documento do responsável e vínculo antes de continuar.');
       return;
     }
 
@@ -68,49 +68,49 @@ export default function KidsGuardianConsentScreen() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.kicker}>AREA INFANTIL PROTEGIDA</Text>
-      <Text style={styles.title}>Consentimento do Responsavel</Text>
+      <Text style={styles.kicker}>ÁREA INFANTIL PROTEGIDA</Text>
+      <Text style={styles.title}>Consentimento do Responsável</Text>
       <Text style={styles.subtitle}>
-        Esta etapa prepara a futura area kids com travas de privacidade. Nenhum perfil infantil fica publico por padrao.
+        Esta etapa prepara a futura área Kids com travas de privacidade. Nenhum perfil infantil fica público por padrão.
       </Text>
-      <Text style={styles.version}>Versao do consentimento: {MINOR_GUARDIAN_CONSENT_VERSION}</Text>
+      <Text style={styles.version}>Versão do consentimento: {MINOR_GUARDIAN_CONSENT_VERSION}</Text>
 
       <Section title="Regras base" items={KIDS_PRIVACY_SUMMARY.terms} />
       <Section title="Privacidade infantil" items={KIDS_PRIVACY_SUMMARY.privacy} />
 
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>Responsavel</Text>
+        <Text style={styles.cardTitle}>Responsável</Text>
         <TextInput
           value={guardianName}
           onChangeText={setGuardianName}
           style={styles.input}
-          placeholder="Nome do responsavel"
+          placeholder="Nome do responsável"
         />
         <TextInput
           value={guardianDocument}
           onChangeText={setGuardianDocument}
           style={styles.input}
-          placeholder="Documento do responsavel"
+          placeholder="Documento do responsável"
         />
         <TextInput
           value={relationship}
           onChangeText={setRelationship}
           style={styles.input}
-          placeholder="Vinculo com a crianca"
+          placeholder="Vínculo com a criança"
         />
       </View>
 
       <View style={styles.noticeBox}>
         <Text style={styles.noticeText}>
-          Ao confirmar, o responsavel declara estar ciente de que o modulo infantil deve operar com minimizacao de dados,
-          sem fotos liberadas por padrao e sem exposicao publica ate definicao juridica e operacional completa.
+          Ao confirmar, o responsável declara estar ciente de que o módulo infantil deve operar com minimização de dados,
+          sem fotos liberadas por padrão e sem exposição pública até definição jurídica e operacional completa.
         </Text>
       </View>
 
       {message ? <Text style={styles.message}>{message}</Text> : null}
 
       <Pressable style={styles.button} onPress={() => void handleAccept()}>
-        <Text style={styles.buttonLabel}>Registrar consentimento do responsavel</Text>
+        <Text style={styles.buttonLabel}>Registrar consentimento do responsável</Text>
       </Pressable>
     </ScrollView>
   );

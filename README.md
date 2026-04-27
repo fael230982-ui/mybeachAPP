@@ -45,6 +45,7 @@ npx expo start
 
 - [Setup](docs/SETUP.md)
 - [Homologação](docs/HOMOLOGACAO.md)
+- [Evidência de homologação](docs/EVIDENCIA-HOMOLOGACAO-2026-04-27.md)
 - [Roadmap](ROADMAP.md)
 - [Checklist](CHECKLIST.md)
 - [Contribuição](CONTRIBUTING.md)

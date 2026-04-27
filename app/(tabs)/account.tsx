@@ -155,8 +155,8 @@ export default function AccountScreen() {
   const [childProfileNameInput, setChildProfileNameInput] = useState('Perfil infantil 1');
   const [childProfileBirthDateInput, setChildProfileBirthDateInput] = useState('2018-01-01');
   const [healthLines, setHealthLines] = useState<string[]>([
-    'Health live: nao verificado',
-    'Health ready: nao verificado',
+    'Health live: não verificado',
+    'Health ready: não verificado',
   ]);
   const [homologationChecks, setHomologationChecks] = useState<Record<HomologationCheckId, boolean>>({
     login: false,
@@ -192,11 +192,11 @@ export default function AccountScreen() {
         'MYBEACH-CIDADAO DIAGNOSTICO LOCAL',
         `Data: ${new Date().toLocaleString('pt-BR')}`,
         `Base URL: ${getApiBaseUrl()}`,
-        `Usuario: ${user?.name ?? 'Nao autenticado no app'}`,
-        `Email: ${user?.email ?? 'Nao disponivel'}`,
-        `Perfil: ${user?.role ?? 'Nao disponivel'}`,
-        `Email verificado: ${user?.emailVerified ? 'sim' : 'nao'}`,
-        `Legacy role: ${user?.legacyRole ?? 'Nao informado'}`,
+        `Usuário: ${user?.name ?? 'Não autenticado no app'}`,
+        `Email: ${user?.email ?? 'Não disponível'}`,
+        `Perfil: ${user?.role ?? 'Não disponível'}`,
+        `Email verificado: ${user?.emailVerified ? 'sim' : 'não'}`,
+        `Legacy role: ${user?.legacyRole ?? 'Não informado'}`,
         `Token type: ${tokenType ?? 'Bearer'}`,
         `Expiracao: ${expirationLabel}`,
         `Tempo restante: ${remainingSessionLabel}`,
@@ -258,7 +258,7 @@ export default function AccountScreen() {
       const liveStatus = live.status ?? (live.ok ? 'ok' : 'sem status');
       nextLines.push(`Health live: ${liveStatus}`);
     } catch {
-      nextLines.push('Health live: indisponivel');
+      nextLines.push('Health live: indisponível');
     }
 
     try {
@@ -266,7 +266,7 @@ export default function AccountScreen() {
       const readyStatus = ready.status ?? (ready.ok ? 'ok' : 'sem status');
       nextLines.push(`Health ready: ${readyStatus}`);
     } catch {
-      nextLines.push('Health ready: indisponivel');
+      nextLines.push('Health ready: indisponível');
     }
 
     setHealthLines(nextLines);
@@ -342,7 +342,7 @@ export default function AccountScreen() {
             )
           );
         } catch {
-          setChildPhotoPolicyJson('Politica remota de foto indisponivel para o primeiro perfil sincronizado.');
+          setChildPhotoPolicyJson('Política remota de foto indisponível para o primeiro perfil sincronizado.');
         }
       }
 
@@ -381,7 +381,7 @@ export default function AccountScreen() {
       syncRemoteChildContent(remoteContents);
       syncRemoteGuardianNotifications(remoteNotifications);
       setMessage(
-        `Kids remoto sincronizado: ${remoteContents.length} conteudo(s), ${remoteNotifications.length} notificacao(oes).`
+        `Kids remoto sincronizado: ${remoteContents.length} conteúdo(s), ${remoteNotifications.length} notificação(ões).`
       );
     } catch (error) {
       if (isAuthError(error)) {
@@ -437,7 +437,7 @@ export default function AccountScreen() {
 
         setMessage(`API autenticada com sucesso para ${profile.name} (${profile.role}).`);
       } else {
-        setMessage('Diagnostico local concluido com sessao baseada em ambiente.');
+        setMessage('Diagnóstico local concluído com sessão baseada em ambiente.');
       }
     } catch (error) {
       if (isAuthError(error)) {
@@ -458,7 +458,7 @@ export default function AccountScreen() {
     try {
       await flushOfflineQueue();
       await loadLocalSnapshot();
-      setMessage('Fila offline sincronizada com sucesso ou mantida apenas com itens ainda nao elegiveis.');
+      setMessage('Fila offline sincronizada com sucesso ou mantida apenas com itens ainda não elegíveis.');
     } catch (error) {
       if (isAuthError(error)) {
         clearSession();
@@ -478,7 +478,7 @@ export default function AccountScreen() {
   }
 
   async function handleShareDiagnosticReport() {
-    const report = diagnosticReport || 'Gere um diagnostico para montar o resumo local.';
+    const report = diagnosticReport || 'Gere um diagnóstico para montar o resumo local.';
     await Share.share({
       title: 'MYBEACH-CIDADAO DIAGNOSTICO',
       message: report,
@@ -508,7 +508,7 @@ export default function AccountScreen() {
     if (!guardianConsent) {
       Alert.alert(
         'Consentimento necessario',
-        'Registre antes o consentimento do responsavel para preparar perfis infantis protegidos.'
+        'Registre antes o consentimento do responsável para preparar perfis infantis protegidos.'
       );
       return;
     }
@@ -538,7 +538,7 @@ export default function AccountScreen() {
           accessToken
         );
         await handleRefreshRemoteChildren();
-        setMessage('Perfil infantil criado na API oficial e sincronizado com o app do responsavel.');
+        setMessage('Perfil infantil criado na API oficial e sincronizado com o app do responsável.');
         return;
       } catch (error) {
         if (isAuthError(error)) {
@@ -643,7 +643,7 @@ export default function AccountScreen() {
           {
             child_profile_id: firstProfile.id,
             title: `Descoberta de ${firstProfile.displayName}`,
-            body: 'Rascunho privado criado pelo app do responsavel.',
+            body: 'Rascunho privado criado pelo app do responsável.',
           },
           accessToken
         );
@@ -682,14 +682,14 @@ export default function AccountScreen() {
           {
             child_profile_id: firstProfile.id,
             title: `Publicacao de ${firstProfile.displayName}`,
-            body: 'Solicitacao de publicacao criada pelo app do responsavel.',
+            body: 'Solicitação de publicação criada pelo app do responsável.',
           },
           accessToken
         );
         const requested = await requestKidsContentPublication(created.id, accessToken);
         syncRemoteChildContent([requested]);
         await handleRefreshRemoteKids();
-        setMessage('Solicitacao remota de publicacao enviada para decisao do responsavel.');
+        setMessage('Solicitação remota de publicação enviada para decisão do responsável.');
         return;
       } catch (error) {
         setMessage(`${getFriendlyApiErrorMessage(error)} O app manteve o fallback local seguro.`);
@@ -705,7 +705,7 @@ export default function AccountScreen() {
       photoRequested: false,
       publicRequested: true,
     });
-    setMessage('Solicitacao de publicacao enviada para decisao do responsavel.');
+    setMessage('Solicitação de publicação enviada para decisão do responsável.');
   }
 
   function handleSaveApiBaseUrl() {
@@ -723,12 +723,12 @@ export default function AccountScreen() {
   function handleResetApiBaseUrl() {
     setApiBaseUrl(null);
     setApiBaseUrlInput(getApiBaseUrl());
-    setMessage('Base URL local removida. O app voltou para a configuracao padrao do ambiente.');
+    setMessage('Base URL local removida. O app voltou para a configuração padrão do ambiente.');
   }
 
   function handleUseEnvironment(url: string | null, label: string, available: boolean) {
     if (!available || !url) {
-      Alert.alert('Ambiente indisponivel', `O preset ${label} ainda nao foi configurado no app.`);
+      Alert.alert('Ambiente indisponível', `O preset ${label} ainda não foi configurado no app.`);
       return;
     }
 
@@ -753,7 +753,7 @@ export default function AccountScreen() {
           contentId,
           {
             status: approve ? 'GUARDIAN_APPROVED_FOR_PUBLICATION' : 'REJECTED_BY_GUARDIAN',
-            review_notes: approve ? 'Aprovado pelo responsavel no app cidadao.' : 'Rejeitado pelo responsavel no app cidadao.',
+            review_notes: approve ? 'Aprovado pelo responsável no app cidadão.' : 'Rejeitado pelo responsável no app cidadão.',
           },
           accessToken
         );
@@ -787,12 +787,12 @@ export default function AccountScreen() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>Conta e diagnostico</Text>
+      <Text style={styles.title}>Conta e diagnóstico</Text>
       <Text style={styles.subtitle}>Sessao, expiracao do token, fila local e resumo pronto para reporte.</Text>
 
       {isHomologationEnvironment ? (
         <View style={styles.homologationBanner}>
-          <Text style={styles.homologationBannerTitle}>Ambiente de homologacao ativo</Text>
+          <Text style={styles.homologationBannerTitle}>Ambiente de homologação ativo</Text>
           <Text style={styles.homologationBannerText}>
             Use apenas usuarios e dados de teste neste endpoint.
           </Text>
@@ -802,17 +802,17 @@ export default function AccountScreen() {
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Rastreabilidade</Text>
         <Text style={styles.item}>App: {APP_RELEASE.name}</Text>
-        <Text style={styles.item}>Versao: {APP_RELEASE.version}</Text>
+        <Text style={styles.item}>Versão: {APP_RELEASE.version}</Text>
         <Text style={styles.item}>Tag interna: {APP_RELEASE.internalTag}</Text>
         <Text style={styles.item}>Contrato API: {APP_RELEASE.apiContract}</Text>
-        <Text style={styles.item}>Ultima validacao registrada: {APP_RELEASE.lastValidatedAt}</Text>
+        <Text style={styles.item}>Última validação registrada: {APP_RELEASE.lastValidatedAt}</Text>
         <Text style={styles.item}>Ambiente: {getCurrentApiEnvironmentLabel()}</Text>
         <Text style={styles.item}>Endpoint: {getApiBaseUrl()}</Text>
         <Text style={styles.item}>Modo Kids: {kidsCapability.label}</Text>
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>Checklist de homologacao</Text>
+        <Text style={styles.cardTitle}>Checklist de homologação</Text>
         <Text style={styles.helper}>
           Progresso local desta sessão: {completedHomologationChecks}/{HOMOLOGATION_CHECKS.length}
         </Text>
@@ -840,11 +840,11 @@ export default function AccountScreen() {
 
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Sessao</Text>
-        <Text style={styles.item}>Usuario: {user?.name ?? 'Nao autenticado no app'}</Text>
-        <Text style={styles.item}>Email: {user?.email ?? 'Nao disponivel'}</Text>
-        <Text style={styles.item}>Perfil: {user?.role ?? 'Nao disponivel'}</Text>
-        <Text style={styles.item}>Email verificado: {user?.emailVerified ? 'sim' : 'nao'}</Text>
-        <Text style={styles.item}>Legacy role: {user?.legacyRole ?? 'Nao informado'}</Text>
+        <Text style={styles.item}>Usuário: {user?.name ?? 'Não autenticado no app'}</Text>
+        <Text style={styles.item}>Email: {user?.email ?? 'Não disponível'}</Text>
+        <Text style={styles.item}>Perfil: {user?.role ?? 'Não disponível'}</Text>
+        <Text style={styles.item}>Email verificado: {user?.emailVerified ? 'sim' : 'não'}</Text>
+        <Text style={styles.item}>Legacy role: {user?.legacyRole ?? 'Não informado'}</Text>
         <Text style={styles.item}>Token type: {tokenType ?? 'Bearer'}</Text>
         <Text style={styles.item}>Expira em: {expirationLabel}</Text>
         <Text style={styles.item}>Tempo restante: {remainingSessionLabel}</Text>
@@ -852,11 +852,11 @@ export default function AccountScreen() {
 
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Privacidade e LGPD</Text>
-        <Text style={styles.item}>Versao aceita: {acceptedVersion ?? 'Nao registrada'}</Text>
+        <Text style={styles.item}>Versão aceita: {acceptedVersion ?? 'Não registrada'}</Text>
         <Text style={styles.item}>
-          Data do aceite: {acceptedAt ? new Date(acceptedAt).toLocaleString('pt-BR') : 'Nao registrada'}
+          Data do aceite: {acceptedAt ? new Date(acceptedAt).toLocaleString('pt-BR') : 'Não registrada'}
         </Text>
-        <Text style={styles.item}>Versao atual exigida: {LGPD_CONSENT_VERSION}</Text>
+        <Text style={styles.item}>Versão atual exigida: {LGPD_CONSENT_VERSION}</Text>
         <Pressable style={styles.secondaryButton} onPress={() => router.push('/privacy-consent')}>
           <Text style={styles.secondaryButtonLabel}>Revisar termos e privacidade</Text>
         </Pressable>
@@ -865,16 +865,16 @@ export default function AccountScreen() {
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Area Kids e Responsavel</Text>
         <Text style={styles.item}>
-          Consentimento do responsavel: {guardianConsent?.version ?? 'Nao registrado'}
+          Consentimento do responsável: {guardianConsent?.version ?? 'Não registrado'}
         </Text>
         <Text style={styles.item}>
-          Versao exigida: {MINOR_GUARDIAN_CONSENT_VERSION}
+          Versão exigida: {MINOR_GUARDIAN_CONSENT_VERSION}
         </Text>
         <Text style={styles.item}>
-          Data: {guardianConsent?.acceptedAt ? new Date(guardianConsent.acceptedAt).toLocaleString('pt-BR') : 'Nao registrada'}
+          Data: {guardianConsent?.acceptedAt ? new Date(guardianConsent.acceptedAt).toLocaleString('pt-BR') : 'Não registrada'}
         </Text>
         <Text style={styles.item}>
-          Responsavel: {guardianConsent?.acceptedByName ?? 'Nao informado'}
+          Responsável: {guardianConsent?.acceptedByName ?? 'Não informado'}
         </Text>
         <Text style={styles.item}>
           Perfis infantis protegidos: {childProfiles.length}
@@ -886,17 +886,17 @@ export default function AccountScreen() {
           Conteudos aguardando aprovacao: {childContentDrafts.filter((item) => item.status === 'AWAITING_GUARDIAN_APPROVAL').length}
         </Text>
         <Text style={styles.item}>
-          Notificacoes do responsavel: {guardianNotifications.filter((item) => !item.readAt).length} pendente(s)
+          Notificações do responsável: {guardianNotifications.filter((item) => !item.readAt).length} pendente(s)
         </Text>
         <Text style={styles.item}>Integracao kids: {kidsCapability.label}</Text>
         <Text style={styles.helper}>
           {kidsCapability.reason}
         </Text>
         <Text style={styles.helper}>
-          Perfis remotos OpenAPI: {kidsCapability.features.childrenCrud ? 'disponiveis' : 'nao publicados'}
+          Perfis remotos OpenAPI: {kidsCapability.features.childrenCrud ? 'disponíveis' : 'não publicados'}
         </Text>
         <Text style={styles.helper}>
-          API 1.3 publica consentimento, conteudo kids, notificacoes parentais e politica tipada de foto. O app usa esses contratos quando ha sessao autenticada.
+          API 1.3 publica consentimento, conteúdo Kids, notificações parentais e política tipada de foto. O app usa esses contratos quando há sessão autenticada.
         </Text>
         <TextInput
           value={childProfileNameInput}
@@ -912,11 +912,11 @@ export default function AccountScreen() {
           placeholder="AAAA-MM-DD"
         />
         <Text style={styles.helper}>
-          Fotos seguem bloqueadas por padrao e nenhum perfil infantil fica publico nesta fase.
+          Fotos seguem bloqueadas por padrão e nenhum perfil infantil fica público nesta fase.
         </Text>
         <View style={styles.buttonRow}>
           <Pressable style={styles.secondaryButton} onPress={() => router.push('/kids-guardian-consent')}>
-            <Text style={styles.secondaryButtonLabel}>Consentimento responsavel</Text>
+            <Text style={styles.secondaryButtonLabel}>Consentimento responsável</Text>
           </Pressable>
           <Pressable style={styles.secondaryButton} onPress={() => void handleCreateProtectedChildDraft()}>
             <Text style={styles.secondaryButtonLabel}>
@@ -952,7 +952,7 @@ export default function AccountScreen() {
           </Pressable>
         </View>
         <Text style={styles.helper}>
-          O endpoint e a politica remota de foto infantil existem na API 1.3, mas o upload continua bloqueado por politica conservadora ate homologacao juridica e operacional.
+          O endpoint e a política remota de foto infantil existem na API 1.3, mas o upload continua bloqueado por política conservadora até homologação jurídica e operacional.
         </Text>
         {childPhotoPolicyJson ? (
           <Text selectable style={styles.reportBox}>
@@ -964,7 +964,7 @@ export default function AccountScreen() {
             <Text style={styles.refreshButtonLabel}>Salvar rascunho privado</Text>
           </Pressable>
           <Pressable style={styles.refreshButton} onPress={() => void handleRequestChildPublication()}>
-            <Text style={styles.refreshButtonLabel}>Pedir publicacao</Text>
+            <Text style={styles.refreshButtonLabel}>Pedir publicação</Text>
           </Pressable>
         </View>
       </View>
@@ -1001,7 +1001,7 @@ export default function AccountScreen() {
 
       {childContentDrafts.length > 0 ? (
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Fluxo de conteudo infantil</Text>
+          <Text style={styles.cardTitle}>Fluxo de conteúdo infantil</Text>
           {childContentDrafts.map((draft) => (
             <View key={draft.id} style={styles.kidsRow}>
               <Text style={styles.item}>
@@ -1019,7 +1019,7 @@ export default function AccountScreen() {
                     style={styles.secondaryButton}
                     onPress={() => void handleReviewChildContent(draft.id, false)}
                   >
-                    <Text style={styles.secondaryButtonLabel}>Autorizar nao</Text>
+                    <Text style={styles.secondaryButtonLabel}>Autorizar não</Text>
                   </Pressable>
                 </View>
               ) : null}
@@ -1030,7 +1030,7 @@ export default function AccountScreen() {
 
       {guardianNotifications.length > 0 ? (
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Monitoramento do responsavel</Text>
+          <Text style={styles.cardTitle}>Monitoramento do responsável</Text>
           {guardianNotifications.map((notification) => (
             <Pressable
               key={notification.id}
@@ -1130,7 +1130,7 @@ export default function AccountScreen() {
           {loading ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.buttonLabel}>Rodar diagnostico</Text>
+            <Text style={styles.buttonLabel}>Rodar diagnóstico</Text>
           )}
         </Pressable>
       </View>
@@ -1160,10 +1160,10 @@ export default function AccountScreen() {
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Resumo para reporte</Text>
         <Text style={styles.helper}>
-          Use este bloco ao reportar teste, falha de sessao, fila offline ou endpoint em uso.
+          Use este bloco ao reportar teste, falha de sessão, fila offline ou endpoint em uso.
         </Text>
         <Text selectable style={styles.reportBox}>
-          {diagnosticReport || 'Gere um diagnostico para montar o resumo local.'}
+          {diagnosticReport || 'Gere um diagnóstico para montar o resumo local.'}
         </Text>
         <Pressable style={styles.shareButton} onPress={() => void handleShareDiagnosticReport()}>
           <Text style={styles.shareButtonLabel}>Compartilhar resumo</Text>
@@ -1172,7 +1172,7 @@ export default function AccountScreen() {
 
       {user ? (
         <Pressable style={styles.logoutButton} onPress={clearSession}>
-          <Text style={styles.logoutLabel}>Encerrar sessao</Text>
+          <Text style={styles.logoutLabel}>Encerrar sessão</Text>
         </Pressable>
       ) : null}
     </ScrollView>

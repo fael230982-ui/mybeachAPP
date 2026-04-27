@@ -70,7 +70,7 @@ export default function MapasScreen() {
       try {
         const { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== 'granted') {
-          throw new Error('Permita a localizacao para usar o mapa.');
+          throw new Error('Permita a localização para usar o mapa.');
         }
 
         const currentLocation = await Location.getCurrentPositionAsync({
@@ -83,8 +83,8 @@ export default function MapasScreen() {
       } catch (error) {
         if (isMounted) {
           Alert.alert(
-            'Localizacao indisponivel',
-            error instanceof Error ? error.message : 'Nao foi possivel carregar sua localizacao.'
+            'Localização indisponível',
+            error instanceof Error ? error.message : 'Não foi possível carregar sua localização.'
           );
         }
       } finally {
@@ -106,7 +106,7 @@ export default function MapasScreen() {
       {isLoadingLocation ? (
         <View style={styles.loading}>
           <ActivityIndicator size="large" color="#ef4444" />
-          <Text style={styles.loadingText}>Buscando sua localizacao...</Text>
+          <Text style={styles.loadingText}>Buscando sua localização...</Text>
         </View>
       ) : (
         <MapView
@@ -123,8 +123,8 @@ export default function MapasScreen() {
                 latitude: location.coords.latitude,
                 longitude: location.coords.longitude,
               }}
-              title="Sua posicao"
-              description="Localizacao atual do dispositivo"
+              title="Sua posição"
+              description="Localização atual do dispositivo"
             />
           ) : null}
         </MapView>
@@ -134,7 +134,7 @@ export default function MapasScreen() {
         <Text style={styles.topTitle}>Mapa operacional</Text>
         <Text style={styles.topText}>Praia ativa: {selectedBeach.name}</Text>
         <Text style={styles.topText}>Bandeira: {selectedBeach.flag.toUpperCase()}</Text>
-        <Text style={styles.topText}>Atualizacao da praia: {selectedBeach.updatedAt}</Text>
+        <Text style={styles.topText}>Atualização da praia: {selectedBeach.updatedAt}</Text>
       </View>
 
       <View style={styles.bottomPanel}>
@@ -143,7 +143,7 @@ export default function MapasScreen() {
           <Text style={styles.panelText}>
             {queueSummary
               ? `${queueSummary.total} item(ns), alertas ${queueSummary.alerts}, pings ${queueSummary.pings}.`
-              : 'Fila nao carregada.'}
+              : 'Fila não carregada.'}
           </Text>
           <Text style={styles.panelSubtext}>
             {queueSummary?.nextRetryLabel ?? 'Sem retry pendente no momento.'}
@@ -168,7 +168,7 @@ export default function MapasScreen() {
         style={styles.btnTarget}
         onPress={() => {
           if (!location || !mapRef.current) {
-            Alert.alert('Localizacao indisponivel', 'Aguarde o carregamento da sua posicao.');
+            Alert.alert('Localização indisponível', 'Aguarde o carregamento da sua posição.');
             return;
           }
 
