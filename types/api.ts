@@ -264,3 +264,9 @@ export type PrivacyConsentPayload = {
 export type PrivacyConsentResponse = PrivacyConsentPayload & {
   accepted_at: string;
 };
+
+export type TokenRefreshResponse = {
+  access_token: string;
+  token_type?: string | null;
+  expires_in_seconds: number;
+};

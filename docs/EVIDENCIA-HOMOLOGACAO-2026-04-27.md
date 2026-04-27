@@ -7,15 +7,16 @@ Data: 2026-04-27
 - App: MYBEACH-CIDADAO
 - Repositório: https://github.com/fael230982-ui/mybeachAPP
 - Contrato de API: API Mbeach 1.3
-- Versão interna alvo: v0.1.1
+- Versão interna alvo: v0.1.2
 - Ambiente: definir durante o teste em dispositivo real
 - Usuário de teste: definir durante o teste em dispositivo real
 
 ## Validação técnica local
 
-- `npm run validate`: pendente de execução final neste ciclo
-- Varredura simples por segredos: pendente de execução final neste ciclo
+- `npm run validate`: ok em 2026-04-27
+- Varredura simples por segredos: sem ocorrências em 2026-04-27
 - Build de distribuição: não aplicável enquanto não houver script dedicado
+- Renovação de sessão via `/auth/refresh`: cobertura adicionada em teste local
 
 ## Checklist funcional
 

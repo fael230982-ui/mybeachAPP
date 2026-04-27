@@ -44,7 +44,7 @@ export function getKidsCapabilitySummary(authToken?: string | null): KidsCapabil
 
   return {
     mode: 'REMOTE_READY',
-    label: 'Modo kids remoto 1.2',
+    label: 'Modo kids remoto 1.3',
     reason:
       'A API 1.3 publica perfis, consentimento parental, conteudo kids, notificacoes parentais e politica tipada de foto infantil. Upload segue bloqueado por politica operacional conservadora.',
     features: KIDS_FEATURES_FROM_OPENAPI,

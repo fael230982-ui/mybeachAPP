@@ -3,6 +3,7 @@ import { getApiBaseUrl } from './config';
 import { decodeJwtPayload } from './jwt';
 
 import type { AuthUser } from '@/stores/authStore';
+import type { TokenRefreshResponse } from '@/types/api';
 
 type LoginPayload = {
   email: string;
@@ -34,6 +35,20 @@ function extractExpiresAt(accessToken: string) {
   }
 
   return new Date(exp * 1000).toISOString();
+}
+
+function extractRefreshExpiresAt(data: TokenRefreshResponse, accessToken: string) {
+  const jwtExpiresAt = extractExpiresAt(accessToken);
+  if (jwtExpiresAt) {
+    return jwtExpiresAt;
+  }
+
+  const expiresInSeconds = Number(data.expires_in_seconds);
+  if (!Number.isFinite(expiresInSeconds) || expiresInSeconds <= 0) {
+    return null;
+  }
+
+  return new Date(Date.now() + expiresInSeconds * 1000).toISOString();
 }
 
 function mapUser(data: any): AuthUser {
@@ -137,4 +152,25 @@ export async function registerCitizen(payload: RegisterPayload) {
     email: payload.email,
     password: payload.password,
   });
+}
+
+export async function refreshCitizenSession(authToken: string) {
+  const data = await apiRequest<TokenRefreshResponse>('/auth/refresh', {
+    method: 'POST',
+    requireAuth: true,
+    authToken,
+  });
+
+  const accessToken = extractAccessToken(data);
+  const tokenType = extractTokenType(data);
+
+  if (!accessToken) {
+    throw new AppError('A resposta do refresh nao retornou access_token.', 'AUTH_TOKEN_MISSING');
+  }
+
+  return {
+    accessToken,
+    tokenType,
+    expiresAt: extractRefreshExpiresAt(data, accessToken),
+  };
 }

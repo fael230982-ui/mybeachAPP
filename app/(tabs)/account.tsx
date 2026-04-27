@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 
 import { getFriendlyApiErrorMessage, isAuthError } from '@/services/api';
-import { fetchCurrentUserProfile, fetchUserProfile } from '@/services/auth';
+import { fetchCurrentUserProfile, fetchUserProfile, refreshCitizenSession } from '@/services/auth';
 import {
   getApiBaseUrl,
   getCurrentApiEnvironmentId,
@@ -124,6 +124,7 @@ export default function AccountScreen() {
   const tokenType = useAuthStore((state) => state.tokenType);
   const expiresAt = useAuthStore((state) => state.expiresAt);
   const clearSession = useAuthStore((state) => state.clearSession);
+  const setSession = useAuthStore((state) => state.setSession);
   const savedApiBaseUrl = useSettingsStore((state) => state.apiBaseUrl);
   const setApiBaseUrl = useSettingsStore((state) => state.setApiBaseUrl);
   const acceptedVersion = usePrivacyStore((state) => state.acceptedVersion);
@@ -463,6 +464,34 @@ export default function AccountScreen() {
       if (isAuthError(error)) {
         clearSession();
         setMessage('Sessao invalida ou sem permissao. O login local foi encerrado.');
+      } else {
+        setMessage(getFriendlyApiErrorMessage(error));
+      }
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleRefreshSession() {
+    if (!accessToken) {
+      Alert.alert('Sessão ausente', 'Entre novamente para renovar a sessão.');
+      return;
+    }
+
+    setLoading(true);
+    setMessage(null);
+
+    try {
+      const refreshed = await refreshCitizenSession(accessToken);
+      setSession({
+        ...refreshed,
+        user,
+      });
+      setMessage('Sessão renovada com sucesso pela API.');
+    } catch (error) {
+      if (isAuthError(error)) {
+        clearSession();
+        setMessage('Sessão inválida ou sem permissão. O login local foi encerrado.');
       } else {
         setMessage(getFriendlyApiErrorMessage(error));
       }
@@ -848,6 +877,9 @@ export default function AccountScreen() {
         <Text style={styles.item}>Token type: {tokenType ?? 'Bearer'}</Text>
         <Text style={styles.item}>Expira em: {expirationLabel}</Text>
         <Text style={styles.item}>Tempo restante: {remainingSessionLabel}</Text>
+        <Pressable style={styles.secondaryButton} onPress={() => void handleRefreshSession()} disabled={!accessToken || loading}>
+          <Text style={styles.secondaryButtonLabel}>Renovar sessão</Text>
+        </Pressable>
       </View>
 
       <View style={styles.card}>

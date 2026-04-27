@@ -182,8 +182,8 @@ function getKidsCapabilitySummary(token) {
   }
 
   return {
-    mode: 'REMOTE_CHILDREN_ONLY',
-    label: 'Modo kids com perfis remotos',
+    mode: 'REMOTE_READY',
+    label: 'Modo kids remoto 1.3',
   };
 }
 
@@ -222,8 +222,36 @@ function buildKidsBackendPendingSnapshotForTest(features) {
       guardianConsents: !features.guardianConsents,
       childContent: !features.childContent,
       guardianNotifications: !features.guardianNotifications,
-      childPhotoOperationalRelease: features.childPhotoUpload,
+      childPhotoOperationalPolicy: features.childPhotoUpload,
     },
+  };
+}
+
+function extractRefreshExpiresAtForTest(data, accessToken, nowMs) {
+  const tokenParts = accessToken.split('.');
+  if (tokenParts.length >= 2) {
+    try {
+      const normalizedPayload = tokenParts[1].replace(/-/g, '+').replace(/_/g, '/');
+      const payload = JSON.parse(Buffer.from(normalizedPayload, 'base64').toString('utf8'));
+      if (typeof payload.exp === 'number') {
+        return new Date(payload.exp * 1000).toISOString();
+      }
+    } catch {
+      // fall back to expires_in_seconds
+    }
+  }
+
+  return new Date(nowMs + data.expires_in_seconds * 1000).toISOString();
+}
+
+function buildChildPhotoPolicySnapshotForTest(policy) {
+  return {
+    childId: policy.child_id,
+    photoAllowed: Boolean(policy.photo_allowed),
+    requiresGuardianApproval: Boolean(policy.requires_guardian_approval),
+    retentionPolicy: policy.retention_policy ?? null,
+    legalBasis: policy.legal_basis ?? null,
+    policyVersion: policy.policy_version ?? null,
   };
 }
 
@@ -440,34 +468,67 @@ function run() {
 
   const remoteKidsMode = getKidsCapabilitySummary('jwt-token');
   assert(
-    remoteKidsMode.mode === 'REMOTE_CHILDREN_ONLY',
-    'Com token, kids deve refletir que a OpenAPI atual so cobre perfis infantis remotos'
+    remoteKidsMode.mode === 'REMOTE_READY',
+    'Com token, kids deve refletir API 1.3 remota para perfis, conteudo, consentimento e notificacoes'
   );
   const integrationMap = buildKidsIntegrationMapForTest(true, {
     childrenCrud: true,
-    childContent: false,
-    guardianConsents: false,
-    guardianNotifications: false,
+    childContent: true,
+    guardianConsents: true,
+    guardianNotifications: true,
     childPhotoUpload: true,
   });
   assert(integrationMap[0].state === 'remoto', 'Sessao autenticada deve aparecer como remota');
   assert(integrationMap[1].state === 'remoto', 'Children remoto deve aparecer como remoto');
-  assert(integrationMap[2].state === 'local', 'Conteudo kids ausente deve seguir local');
+  assert(integrationMap[2].state === 'remoto', 'Conteudo kids remoto deve aparecer como remoto');
+  assert(integrationMap[3].state === 'remoto', 'Consentimento parental remoto deve aparecer como remoto');
+  assert(integrationMap[4].state === 'remoto', 'Notificacoes parentais remotas devem aparecer como remotas');
   assert(integrationMap[5].state === 'bloqueado', 'Foto infantil deve permanecer bloqueada');
   const backendPending = buildKidsBackendPendingSnapshotForTest({
     childrenCrud: true,
-    childContent: false,
-    guardianConsents: false,
-    guardianNotifications: false,
+    childContent: true,
+    guardianConsents: true,
+    guardianNotifications: true,
     childPhotoUpload: true,
   });
   assert(
-    backendPending.pendingBackendAreas.guardianConsents === true,
-    'Consentimento parental remoto deve continuar pendente'
+    backendPending.pendingBackendAreas.guardianConsents === false,
+    'Consentimento parental remoto nao deve continuar pendente na API 1.3'
   );
   assert(
-    backendPending.pendingBackendAreas.childPhotoOperationalRelease === true,
-    'Upload remoto existente deve seguir marcado como liberacao operacional pendente'
+    backendPending.pendingBackendAreas.childContent === false,
+    'Conteudo kids remoto nao deve continuar pendente na API 1.3'
+  );
+  assert(
+    backendPending.pendingBackendAreas.guardianNotifications === false,
+    'Notificacoes parentais remotas nao devem continuar pendentes na API 1.3'
+  );
+  assert(
+    backendPending.pendingBackendAreas.childPhotoOperationalPolicy === true,
+    'Upload remoto existente deve seguir marcado como politica operacional pendente'
+  );
+  const childPhotoPolicySnapshot = buildChildPhotoPolicySnapshotForTest({
+    child_id: 'child-1',
+    photo_allowed: false,
+    requires_guardian_approval: true,
+    retention_policy: 'blocked_until_operational_release',
+    legal_basis: 'guardian_consent',
+    policy_version: '1.3',
+  });
+  assert(childPhotoPolicySnapshot.childId === 'child-1', 'Politica de foto deve preservar child_id canonico');
+  assert(childPhotoPolicySnapshot.photoAllowed === false, 'Politica de foto deve respeitar bloqueio remoto');
+  assert(childPhotoPolicySnapshot.requiresGuardianApproval === true, 'Politica de foto deve exigir aprovacao');
+  const refreshExpiresAt = extractRefreshExpiresAtForTest(
+    {
+      access_token: 'not-a-jwt',
+      expires_in_seconds: 900,
+    },
+    'not-a-jwt',
+    new Date('2026-04-13T00:00:00.000Z').getTime()
+  );
+  assert(
+    refreshExpiresAt === '2026-04-13T00:15:00.000Z',
+    'Refresh de sessao deve usar expires_in_seconds quando token nao trouxer exp'
   );
   assert(
     resolveAgeBracketFromBirthDateForTest('2022-01-01') === '0-5',

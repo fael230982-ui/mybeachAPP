@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-04-27 - v0.1.2
+
+- Adiciona renovacao de sessao via `/auth/refresh` na tela Conta.
+- Atualiza rastreabilidade interna para `v0.1.2`.
+- Alinha diagnostico Kids ao modo remoto da API Mbeach 1.3.
+- Amplia testes locais para politica de foto infantil e refresh de token.
+
 ## 2026-04-27 - v0.1.1
 
 - Revisa textos visíveis das telas principais.
