@@ -1,50 +1,39 @@
-# Welcome to your Expo app 👋
+# MyBeach Cidadao
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Aplicativo Expo do modulo cidadao do ecossistema MyBeach.
 
-## Get started
+## Configuracao
 
-1. Install dependencies
-
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+Defina as variaveis abaixo antes de iniciar o app:
 
 ```bash
-npm run reset-project
+EXPO_PUBLIC_API_BASE_URL=https://api.mybeach.com.br
+EXPO_PUBLIC_API_ACCESS_TOKEN=seu_token_de_acesso
+EXPO_PUBLIC_CITIZEN_USER_ID=uuid_do_cidadao
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+O app nao embarca mais token master no codigo. Os endpoints protegidos so funcionam com token configurado no ambiente.
 
-## Learn more
+## LGPD e perfis infantis
 
-To learn more about developing your project with Expo, look at the following resources:
+- o primeiro acesso exige aceite versionado do Termo de Uso e do Aviso de Privacidade
+- a base tecnica para `Area Kids` foi criada em modo protegido
+- perfis infantis locais nascem sem foto e sem visibilidade publica
+- consentimento do responsavel e versionado separadamente antes de qualquer fluxo infantil
+- texto juridico definitivo ainda deve ser validado com controlador, encarregado e assessoria juridica
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## Scripts
 
-## Join the community
+```bash
+npm install
+npm run lint
+npx tsc --noEmit
+npx expo start
+```
 
-Join our community of developers creating universal apps.
+## Estrutura principal
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- `services/`: integracoes tipadas com backend
+- `types/`: contratos locais da API
+- `stores/`: estado compartilhado da praia selecionada
+- `app/(tabs)/`: telas principais

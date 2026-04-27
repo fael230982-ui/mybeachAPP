@@ -1,15 +1,17 @@
 import { ResizeMode, Video } from 'expo-av';
 import React, { useEffect, useRef } from 'react';
-import { Animated, Dimensions, Image, StatusBar, StyleSheet, Text, View } from 'react-native';
+import { Animated, Image, StatusBar, StyleSheet, Text, View } from 'react-native';
 
-const { width, height } = Dimensions.get('window');
+type SplashScreenAnimadaProps = {
+  onFinish?: () => void;
+};
 
-export default function SplashScreenAnimada({ onFinish }) {
+export default function SplashScreenAnimada({ onFinish }: SplashScreenAnimadaProps) {
   const logoOpacity = useRef(new Animated.Value(0)).current;
   const logoScale = useRef(new Animated.Value(0.6)).current;
 
   useEffect(() => {
-    setTimeout(() => {
+    const introTimeout = setTimeout(() => {
       Animated.parallel([
         Animated.timing(logoOpacity, { 
           toValue: 1, 
@@ -23,12 +25,16 @@ export default function SplashScreenAnimada({ onFinish }) {
           useNativeDriver: true 
         })
       ]).start(() => {
-        setTimeout(() => { 
-          if(onFinish) onFinish(); 
+        const finishTimeout = setTimeout(() => {
+          onFinish?.();
         }, 2000);
+
+        return () => clearTimeout(finishTimeout);
       });
     }, 1000);
-  }, []);
+
+    return () => clearTimeout(introTimeout);
+  }, [logoOpacity, logoScale, onFinish]);
 
   return (
     <View style={styles.container}>

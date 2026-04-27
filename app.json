@@ -27,6 +27,7 @@
     "web": {
       "favicon": "./assets/images/favicon.png"
     },
+    "scheme": "mybeach",
     "plugins": [
       "expo-router",
       [
@@ -34,10 +35,18 @@
         {
           "microphonePermission": "Allow MyBeach to access your microphone."
         }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/notification-icon.png",
+          "color": "#ffffff"
+        }
       ]
     ],
     "extra": {
       "router": {},
+      "apiBaseUrl": "https://api.mybeach.com.br",
       "eas": {
         "projectId": "ec3956b6-1b7e-425e-8174-df6c9a779821"
       }

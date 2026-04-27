@@ -1,40 +1,163 @@
-import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
-import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useMemo } from 'react';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
+
+import { defaultBeachData, useBeachStore } from '@/stores/beachStore';
+
+function isOperationalPlaceholder(item: string) {
+  const normalized = item.toLowerCase();
+  return normalized.includes('nenhum comercio') || normalized.includes('nao foi sincronizado');
+}
 
 export default function ComerciosScreen() {
+  const currentBeach = useBeachStore((state) => state.selectedBeach) ?? defaultBeachData;
+  const syncedItems = useMemo(
+    () => currentBeach.comerciosSugeridos.filter((item) => !isOperationalPlaceholder(item)),
+    [currentBeach.comerciosSugeridos]
+  );
+  const hasCoverage = syncedItems.length > 0;
+
   return (
-    <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 100 }}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.header}>
-        <Text style={styles.title}>Comércios</Text>
-        <Text style={styles.subtitle}>O melhor da gastronomia local</Text>
+        <Text style={styles.title}>Comercios em {currentBeach.name}</Text>
+        <Text style={styles.subtitle}>Somente itens ligados a praia selecionada no momento.</Text>
       </View>
 
-      <TouchableOpacity style={styles.card}>
-        <Image source={require('../../assets/images/quiosque.jpeg')} style={styles.cardImg} />
-        <View style={styles.info}>
-          <Text style={styles.name}>Quiosque do Pescador</Text>
-          <Text style={styles.desc}>Sabor autêntico e tradição da Rafiells Soluções.</Text>
-          <View style={styles.row}>
-             <Ionicons name="star" size={16} color="#eab308" />
-             <Text style={styles.rating}>4.9 (250 avaliações)</Text>
-          </View>
-        </View>
-      </TouchableOpacity>
+      <View style={[styles.statusCard, hasCoverage ? styles.statusCardOnline : styles.statusCardPending]}>
+        <Text style={styles.statusEyebrow}>{hasCoverage ? 'COBERTURA LOCAL' : 'COBERTURA PENDENTE'}</Text>
+        <Text style={styles.statusTitle}>
+          {hasCoverage ? 'Lista operacional disponivel' : 'Sem fonte validada de comercios'}
+        </Text>
+        <Text style={styles.statusText}>
+          {hasCoverage
+            ? 'A aba passa a mostrar apenas itens efetivamente vinculados ao contexto atual da praia.'
+            : 'O app evita descrever estabelecimentos sem origem validada. Quando o backend publicar a fonte canonica, esta tela pode ser preenchida sem inventar catalogo.'}
+        </Text>
+      </View>
+
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>Itens disponiveis</Text>
+        {hasCoverage ? (
+          syncedItems.map((item) => (
+            <View key={item} style={styles.itemRow}>
+              <Text style={styles.itemBullet}>•</Text>
+              <Text style={styles.itemText}>{item}</Text>
+            </View>
+          ))
+        ) : (
+          <>
+            <Text style={styles.emptyTitle}>Nenhum comercio sincronizado para {currentBeach.name}</Text>
+            <Text style={styles.emptyText}>
+              A tela permanece intencionalmente conservadora para nao misturar recomendacao com placeholder.
+            </Text>
+          </>
+        )}
+      </View>
+
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>Contexto operacional</Text>
+        <Text style={styles.contextText}>Praia atual: {currentBeach.name}</Text>
+        <Text style={styles.contextText}>Cidade vinculada: {currentBeach.cityId ?? 'nao informada'}</Text>
+        <Text style={styles.contextText}>Atualizacao de praia: {currentBeach.updatedAt}</Text>
+        <Text style={styles.contextText}>
+          Proximo passo ideal: consumir uma rota oficial de catalogo por praia em vez de manter bloco estatico.
+        </Text>
+      </View>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f8fafc' },
-  header: { padding: 30, paddingTop: 60 },
-  title: { fontSize: 34, fontWeight: '900' },
-  subtitle: { fontSize: 16, color: '#64748b' },
-  card: { marginHorizontal: 25, backgroundColor: '#fff', borderRadius: 30, overflow: 'hidden', elevation: 6, marginBottom: 25 },
-  cardImg: { width: '100%', height: 180 },
-  info: { padding: 20 },
-  name: { fontSize: 20, fontWeight: 'bold', color: '#1e293b' },
-  desc: { color: '#64748b', fontSize: 14, marginVertical: 8 },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  rating: { fontSize: 13, fontWeight: 'bold', color: '#1e293b' }
+  container: {
+    flex: 1,
+    backgroundColor: '#f8fafc',
+  },
+  content: {
+    padding: 24,
+    paddingTop: 60,
+    paddingBottom: 110,
+    gap: 16,
+  },
+  header: {
+    marginBottom: 4,
+  },
+  title: {
+    fontSize: 30,
+    fontWeight: '900',
+    color: '#0f172a',
+  },
+  subtitle: {
+    marginTop: 6,
+    color: '#64748b',
+    lineHeight: 22,
+  },
+  statusCard: {
+    borderRadius: 28,
+    padding: 22,
+  },
+  statusCardOnline: {
+    backgroundColor: '#dcfce7',
+  },
+  statusCardPending: {
+    backgroundColor: '#fff7ed',
+  },
+  statusEyebrow: {
+    color: '#64748b',
+    fontSize: 11,
+    fontWeight: '900',
+    letterSpacing: 1.2,
+  },
+  statusTitle: {
+    marginTop: 8,
+    color: '#0f172a',
+    fontSize: 22,
+    fontWeight: '900',
+  },
+  statusText: {
+    marginTop: 8,
+    color: '#334155',
+    lineHeight: 22,
+  },
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: 24,
+    padding: 20,
+  },
+  cardTitle: {
+    color: '#0f172a',
+    fontSize: 18,
+    fontWeight: '800',
+    marginBottom: 12,
+  },
+  itemRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 8,
+    marginBottom: 10,
+  },
+  itemBullet: {
+    color: '#0f172a',
+    fontSize: 18,
+    lineHeight: 22,
+  },
+  itemText: {
+    flex: 1,
+    color: '#475569',
+    lineHeight: 22,
+  },
+  emptyTitle: {
+    color: '#0f172a',
+    fontSize: 16,
+    fontWeight: '800',
+    marginBottom: 8,
+  },
+  emptyText: {
+    color: '#64748b',
+    lineHeight: 22,
+  },
+  contextText: {
+    color: '#475569',
+    lineHeight: 22,
+    marginBottom: 8,
+  },
 });
