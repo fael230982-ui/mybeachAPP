@@ -11,6 +11,8 @@
 - Diagnóstico operacional na tela Conta.
 - Publicação inicial no GitHub.
 - Documentação de autoria, contribuição, checklist e setup.
+- Integração com contratos Kids da API Mbeach 1.2.
+- Registro remoto de aceite LGPD para usuário autenticado.
 
 ## Em validação
 
@@ -19,14 +21,16 @@
 - Troca de ambiente de API pela tela Conta.
 - Health checks `GET /health/live` e `GET /health/ready`.
 - Sincronização de fila offline após retomada de conexão.
+- Consentimento parental remoto.
+- Conteúdo Kids remoto com pedido e decisão de publicação.
+- Notificações parentais remotas com marcação de leitura.
 
 ## Depende do backend
 
-- Consentimento parental remoto versionado.
-- Conteúdo infantil com revisão do responsável.
-- Notificações parentais com leitura, auditoria e vínculo com perfil infantil.
-- Política operacional para foto infantil.
-- Contratos finais para homologação e produção.
+- Schema formal para resposta de `/children/{child_id}/photo-policy`.
+- Política operacional final para foto infantil.
+- Contratos finais de homologação e produção com dados reais.
+- Critérios de auditoria/relatório para aceite LGPD, consentimento parental e decisões Kids.
 
 ## Depende jurídico/LGPD
 

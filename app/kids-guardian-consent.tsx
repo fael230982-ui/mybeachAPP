@@ -3,6 +3,9 @@ import React, { useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { KIDS_PRIVACY_SUMMARY, MINOR_GUARDIAN_CONSENT_VERSION } from '@/constants/legal';
+import { getFriendlyApiErrorMessage } from '@/services/api';
+import { createKidsGuardianConsent } from '@/services/kids';
+import { useAuthStore } from '@/stores/authStore';
 import { useKidsSafetyStore } from '@/stores/kidsSafetyStore';
 
 function Section({ title, items }: { title: string; items: string[] }) {
@@ -20,21 +23,45 @@ function Section({ title, items }: { title: string; items: string[] }) {
 
 export default function KidsGuardianConsentScreen() {
   const acceptGuardianConsent = useKidsSafetyStore((state) => state.acceptGuardianConsent);
+  const syncRemoteGuardianConsent = useKidsSafetyStore((state) => state.syncRemoteGuardianConsent);
+  const accessToken = useAuthStore((state) => state.accessToken);
   const [guardianName, setGuardianName] = useState('');
   const [guardianDocument, setGuardianDocument] = useState('');
   const [relationship, setRelationship] = useState('');
+  const [message, setMessage] = useState<string | null>(null);
 
-  function handleAccept() {
-    if (!guardianName.trim() || !relationship.trim()) {
-      Alert.alert('Dados incompletos', 'Informe nome do responsavel e vinculo antes de continuar.');
+  async function handleAccept() {
+    if (!guardianName.trim() || !guardianDocument.trim() || !relationship.trim()) {
+      Alert.alert('Dados incompletos', 'Informe nome, documento do responsavel e vinculo antes de continuar.');
       return;
     }
 
-    acceptGuardianConsent({
+    const payload = {
       acceptedByName: guardianName.trim(),
-      acceptedByDocument: guardianDocument.trim() || null,
+      acceptedByDocument: guardianDocument.trim(),
       relationship: relationship.trim(),
-    });
+    };
+
+    if (accessToken) {
+      try {
+        const remoteConsent = await createKidsGuardianConsent(
+          {
+            consent_version: MINOR_GUARDIAN_CONSENT_VERSION,
+            accepted_by_name: payload.acceptedByName,
+            accepted_by_document: payload.acceptedByDocument,
+            relationship: payload.relationship,
+          },
+          accessToken
+        );
+        syncRemoteGuardianConsent(remoteConsent);
+        router.back();
+        return;
+      } catch (error) {
+        setMessage(`${getFriendlyApiErrorMessage(error)} O consentimento foi preservado localmente.`);
+      }
+    }
+
+    acceptGuardianConsent(payload);
 
     router.back();
   }
@@ -80,7 +107,9 @@ export default function KidsGuardianConsentScreen() {
         </Text>
       </View>
 
-      <Pressable style={styles.button} onPress={handleAccept}>
+      {message ? <Text style={styles.message}>{message}</Text> : null}
+
+      <Pressable style={styles.button} onPress={() => void handleAccept()}>
         <Text style={styles.buttonLabel}>Registrar consentimento do responsavel</Text>
       </Pressable>
     </ScrollView>
@@ -156,6 +185,11 @@ const styles = StyleSheet.create({
   noticeText: {
     color: '#9a3412',
     lineHeight: 22,
+  },
+  message: {
+    color: '#9a3412',
+    lineHeight: 20,
+    marginBottom: 16,
   },
   button: {
     backgroundColor: '#0f172a',

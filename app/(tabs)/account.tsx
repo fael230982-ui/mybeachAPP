@@ -24,9 +24,17 @@ import { LGPD_CONSENT_VERSION, MINOR_GUARDIAN_CONSENT_VERSION } from '@/constant
 import { getLiveHealth, getReadyHealth } from '@/services/health';
 import {
   createKidsChildProfile,
+  createKidsContent,
   deleteKidsChildProfile,
+  getCurrentKidsGuardianConsent,
+  getKidsChildPhotoPolicy,
   getKidsCapabilitySummary,
+  listKidsContent,
   listKidsChildren,
+  listKidsGuardianNotifications,
+  markKidsGuardianNotificationRead,
+  requestKidsContentPublication,
+  reviewKidsContent,
   updateKidsChildProfile,
 } from '@/services/kids';
 import {
@@ -97,6 +105,9 @@ export default function AccountScreen() {
   const guardianNotifications = useKidsSafetyStore((state) => state.guardianNotifications);
   const addChildProfileDraft = useKidsSafetyStore((state) => state.addChildProfileDraft);
   const syncRemoteChildProfiles = useKidsSafetyStore((state) => state.syncRemoteChildProfiles);
+  const syncRemoteGuardianConsent = useKidsSafetyStore((state) => state.syncRemoteGuardianConsent);
+  const syncRemoteChildContent = useKidsSafetyStore((state) => state.syncRemoteChildContent);
+  const syncRemoteGuardianNotifications = useKidsSafetyStore((state) => state.syncRemoteGuardianNotifications);
   const addChildContentDraft = useKidsSafetyStore((state) => state.addChildContentDraft);
   const reviewChildContentDraft = useKidsSafetyStore((state) => state.reviewChildContentDraft);
   const markGuardianNotificationRead = useKidsSafetyStore((state) => state.markGuardianNotificationRead);
@@ -109,6 +120,7 @@ export default function AccountScreen() {
   const [diagnosticReport, setDiagnosticReport] = useState('');
   const [kidsSnapshotJson, setKidsSnapshotJson] = useState('');
   const [kidsBackendPendingJson, setKidsBackendPendingJson] = useState('');
+  const [childPhotoPolicyJson, setChildPhotoPolicyJson] = useState('');
   const [apiBaseUrlInput, setApiBaseUrlInput] = useState(savedApiBaseUrl ?? getApiBaseUrl());
   const [remoteChildrenLoading, setRemoteChildrenLoading] = useState(false);
   const [childProfileNameInput, setChildProfileNameInput] = useState('Perfil infantil 1');
@@ -268,6 +280,16 @@ export default function AccountScreen() {
     try {
       const remoteProfiles = await listKidsChildren(accessToken);
       syncRemoteChildProfiles(remoteProfiles);
+
+      if (remoteProfiles[0]) {
+        try {
+          const photoPolicy = await getKidsChildPhotoPolicy(remoteProfiles[0].id, accessToken);
+          setChildPhotoPolicyJson(JSON.stringify(photoPolicy, null, 2));
+        } catch {
+          setChildPhotoPolicyJson('Politica remota de foto indisponivel para o primeiro perfil sincronizado.');
+        }
+      }
+
       setMessage(`Perfis infantis remotos sincronizados: ${remoteProfiles.length}.`);
     } catch (error) {
       if (isAuthError(error)) {
@@ -281,13 +303,59 @@ export default function AccountScreen() {
     }
   }, [accessToken, kidsCapability.features.childrenCrud, syncRemoteChildProfiles, clearSession]);
 
+  const handleRefreshRemoteKids = useCallback(async () => {
+    if (!accessToken) {
+      return;
+    }
+
+    setRemoteChildrenLoading(true);
+
+    try {
+      const [remoteConsent, remoteContents, remoteNotifications] = await Promise.all([
+        kidsCapability.features.guardianConsents
+          ? getCurrentKidsGuardianConsent(accessToken)
+          : Promise.resolve(null),
+        kidsCapability.features.childContent ? listKidsContent(accessToken) : Promise.resolve([]),
+        kidsCapability.features.guardianNotifications
+          ? listKidsGuardianNotifications(accessToken)
+          : Promise.resolve([]),
+      ]);
+
+      syncRemoteGuardianConsent(remoteConsent);
+      syncRemoteChildContent(remoteContents);
+      syncRemoteGuardianNotifications(remoteNotifications);
+      setMessage(
+        `Kids remoto sincronizado: ${remoteContents.length} conteudo(s), ${remoteNotifications.length} notificacao(oes).`
+      );
+    } catch (error) {
+      if (isAuthError(error)) {
+        clearSession();
+        setMessage('Sessao invalida ou sem permissao. O login local foi encerrado.');
+      } else {
+        setMessage(getFriendlyApiErrorMessage(error));
+      }
+    } finally {
+      setRemoteChildrenLoading(false);
+    }
+  }, [
+    accessToken,
+    clearSession,
+    kidsCapability.features.childContent,
+    kidsCapability.features.guardianConsents,
+    kidsCapability.features.guardianNotifications,
+    syncRemoteChildContent,
+    syncRemoteGuardianConsent,
+    syncRemoteGuardianNotifications,
+  ]);
+
   useEffect(() => {
     if (!accessToken || !kidsCapability.features.childrenCrud) {
       return;
     }
 
     void handleRefreshRemoteChildren();
-  }, [accessToken, kidsCapability.features.childrenCrud, handleRefreshRemoteChildren]);
+    void handleRefreshRemoteKids();
+  }, [accessToken, kidsCapability.features.childrenCrud, handleRefreshRemoteChildren, handleRefreshRemoteKids]);
 
   async function handleDiagnostics() {
     setLoading(true);
@@ -504,11 +572,33 @@ export default function AccountScreen() {
     }
   }
 
-  function handleCreateChildContentDraft() {
+  async function handleCreateChildContentDraft() {
     const firstProfile = childProfiles[0];
     if (!firstProfile) {
       Alert.alert('Perfil infantil ausente', 'Crie primeiro um perfil infantil protegido.');
       return;
+    }
+
+    if (accessToken && kidsCapability.features.childContent && firstProfile.source === 'REMOTE') {
+      setRemoteChildrenLoading(true);
+
+      try {
+        const created = await createKidsContent(
+          {
+            child_profile_id: firstProfile.id,
+            title: `Descoberta de ${firstProfile.displayName}`,
+            body: 'Rascunho privado criado pelo app do responsavel.',
+          },
+          accessToken
+        );
+        syncRemoteChildContent([created]);
+        setMessage('Conteudo infantil remoto criado como rascunho privado.');
+        return;
+      } catch (error) {
+        setMessage(`${getFriendlyApiErrorMessage(error)} O app manteve o fallback local seguro.`);
+      } finally {
+        setRemoteChildrenLoading(false);
+      }
     }
 
     addChildContentDraft({
@@ -521,11 +611,35 @@ export default function AccountScreen() {
     setMessage('Conteudo infantil criado como rascunho privado.');
   }
 
-  function handleRequestChildPublication() {
+  async function handleRequestChildPublication() {
     const firstProfile = childProfiles[0];
     if (!firstProfile) {
       Alert.alert('Perfil infantil ausente', 'Crie primeiro um perfil infantil protegido.');
       return;
+    }
+
+    if (accessToken && kidsCapability.features.childContent && firstProfile.source === 'REMOTE') {
+      setRemoteChildrenLoading(true);
+
+      try {
+        const created = await createKidsContent(
+          {
+            child_profile_id: firstProfile.id,
+            title: `Publicacao de ${firstProfile.displayName}`,
+            body: 'Solicitacao de publicacao criada pelo app do responsavel.',
+          },
+          accessToken
+        );
+        const requested = await requestKidsContentPublication(created.id, accessToken);
+        syncRemoteChildContent([requested]);
+        await handleRefreshRemoteKids();
+        setMessage('Solicitacao remota de publicacao enviada para decisao do responsavel.');
+        return;
+      } catch (error) {
+        setMessage(`${getFriendlyApiErrorMessage(error)} O app manteve o fallback local seguro.`);
+      } finally {
+        setRemoteChildrenLoading(false);
+      }
     }
 
     addChildContentDraft({
@@ -565,6 +679,47 @@ export default function AccountScreen() {
     setApiBaseUrl(url);
     setApiBaseUrlInput(url);
     setMessage(`Ambiente ${label} aplicado localmente.`);
+  }
+
+  async function handleReviewChildContent(contentId: string, approve: boolean) {
+    if (accessToken && kidsCapability.features.childContent) {
+      setRemoteChildrenLoading(true);
+
+      try {
+        const reviewed = await reviewKidsContent(
+          contentId,
+          {
+            status: approve ? 'GUARDIAN_APPROVED_FOR_PUBLICATION' : 'REJECTED_BY_GUARDIAN',
+            review_notes: approve ? 'Aprovado pelo responsavel no app cidadao.' : 'Rejeitado pelo responsavel no app cidadao.',
+          },
+          accessToken
+        );
+        syncRemoteChildContent([reviewed]);
+        await handleRefreshRemoteKids();
+        setMessage(approve ? 'Conteudo infantil aprovado remotamente.' : 'Conteudo infantil rejeitado remotamente.');
+        return;
+      } catch (error) {
+        setMessage(`${getFriendlyApiErrorMessage(error)} A decisao foi aplicada localmente.`);
+      } finally {
+        setRemoteChildrenLoading(false);
+      }
+    }
+
+    reviewChildContentDraft({ contentId, approve });
+  }
+
+  async function handleMarkGuardianNotificationRead(notificationId: string) {
+    if (accessToken && kidsCapability.features.guardianNotifications) {
+      try {
+        const notification = await markKidsGuardianNotificationRead(notificationId, accessToken);
+        syncRemoteGuardianNotifications([notification]);
+        return;
+      } catch (error) {
+        setMessage(`${getFriendlyApiErrorMessage(error)} A notificacao foi marcada localmente.`);
+      }
+    }
+
+    markGuardianNotificationRead(notificationId);
   }
 
   return (
@@ -630,7 +785,7 @@ export default function AccountScreen() {
           Perfis remotos OpenAPI: {kidsCapability.features.childrenCrud ? 'disponiveis' : 'nao publicados'}
         </Text>
         <Text style={styles.helper}>
-          Push do responsavel pode reaproveitar o registro atual de token do ecossistema, mas ainda falta recurso remoto de notificacoes parentais com leitura e auditoria.
+          API 1.2 publica consentimento, conteudo kids e notificacoes parentais. O app usa esses contratos quando ha sessao autenticada.
         </Text>
         <TextInput
           value={childProfileNameInput}
@@ -686,13 +841,18 @@ export default function AccountScreen() {
           </Pressable>
         </View>
         <Text style={styles.helper}>
-          O endpoint de foto infantil ja existe na API, mas continua bloqueado por politica conservadora ate definicao formal do backend.
+          O endpoint e a politica remota de foto infantil existem na API 1.2, mas o upload continua bloqueado por politica conservadora ate homologacao juridica e operacional.
         </Text>
+        {childPhotoPolicyJson ? (
+          <Text selectable style={styles.reportBox}>
+            {childPhotoPolicyJson}
+          </Text>
+        ) : null}
         <View style={styles.buttonRow}>
-          <Pressable style={styles.refreshButton} onPress={handleCreateChildContentDraft}>
+          <Pressable style={styles.refreshButton} onPress={() => void handleCreateChildContentDraft()}>
             <Text style={styles.refreshButtonLabel}>Salvar rascunho privado</Text>
           </Pressable>
-          <Pressable style={styles.refreshButton} onPress={handleRequestChildPublication}>
+          <Pressable style={styles.refreshButton} onPress={() => void handleRequestChildPublication()}>
             <Text style={styles.refreshButtonLabel}>Pedir publicacao</Text>
           </Pressable>
         </View>
@@ -740,13 +900,13 @@ export default function AccountScreen() {
                 <View style={styles.buttonRow}>
                   <Pressable
                     style={styles.secondaryButton}
-                    onPress={() => reviewChildContentDraft({ contentId: draft.id, approve: true })}
+                    onPress={() => void handleReviewChildContent(draft.id, true)}
                   >
                     <Text style={styles.secondaryButtonLabel}>Autorizar sim</Text>
                   </Pressable>
                   <Pressable
                     style={styles.secondaryButton}
-                    onPress={() => reviewChildContentDraft({ contentId: draft.id, approve: false })}
+                    onPress={() => void handleReviewChildContent(draft.id, false)}
                   >
                     <Text style={styles.secondaryButtonLabel}>Autorizar nao</Text>
                   </Pressable>
@@ -764,7 +924,7 @@ export default function AccountScreen() {
             <Pressable
               key={notification.id}
               style={styles.notificationCard}
-              onPress={() => markGuardianNotificationRead(notification.id)}
+              onPress={() => void handleMarkGuardianNotificationRead(notification.id)}
             >
               <Text style={styles.notificationTitle}>{notification.title}</Text>
               <Text style={styles.item}>{notification.message}</Text>

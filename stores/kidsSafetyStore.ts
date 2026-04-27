@@ -8,8 +8,11 @@ import type {
   ChildLinkedProfile,
   ChildProfileDraft,
   ChildProfileResponse,
+  ChildContentResponse,
   GuardianConsentRecord,
+  GuardianConsentResponse,
   GuardianNotificationItem,
+  GuardianNotificationResponse,
 } from '@/types/api';
 
 type KidsSafetyState = {
@@ -29,6 +32,9 @@ type KidsSafetyState = {
     notes?: string | null;
   }) => void;
   syncRemoteChildProfiles: (profiles: ChildProfileResponse[]) => void;
+  syncRemoteGuardianConsent: (consent: GuardianConsentResponse | null) => void;
+  syncRemoteChildContent: (contents: ChildContentResponse[]) => void;
+  syncRemoteGuardianNotifications: (notifications: GuardianNotificationResponse[]) => void;
   addChildContentDraft: (payload: {
     childProfileId: string;
     title: string;
@@ -157,6 +163,64 @@ export const useKidsSafetyStore = create<KidsSafetyState>()(
 
           return {
             childProfiles: [...remoteProfiles, ...localProfiles].slice(0, 20),
+          };
+        }),
+      syncRemoteGuardianConsent: (consent) =>
+        set(() => {
+          if (!consent || consent.revoked_at) {
+            return {};
+          }
+
+          return {
+            guardianConsent: {
+              version: consent.consent_version,
+              acceptedAt: consent.accepted_at,
+              acceptedByName: consent.accepted_by_name,
+              acceptedByDocument: consent.accepted_by_document,
+              relationship: consent.relationship,
+            },
+          };
+        }),
+      syncRemoteChildContent: (contents) =>
+        set((state) => {
+          const remoteDrafts: ChildContentDraft[] = contents.map((content) => ({
+            id: content.id,
+            childProfileId: content.child_profile_id ?? 'remote-unlinked',
+            title: content.title,
+            category: 'DISCOVERY',
+            status: content.status,
+            photoRequested: false,
+            publicRequested: Boolean(content.requested_publication_at),
+            createdAt: content.created_at,
+            updatedAt: content.updated_at,
+          }));
+          const localDrafts = state.childContentDrafts.filter((item) => !contents.some((content) => content.id === item.id));
+
+          return {
+            childContentDrafts: [...remoteDrafts, ...localDrafts].slice(0, 50),
+          };
+        }),
+      syncRemoteGuardianNotifications: (notifications) =>
+        set((state) => {
+          const remoteNotifications: GuardianNotificationItem[] = notifications.map((notification) => ({
+            id: notification.id,
+            type:
+              notification.type === 'KIDS_PROFILE_LINKED'
+                ? 'KIDS_PROFILE_LINKED'
+                : 'KIDS_CONTENT_REVIEW',
+            title: notification.title,
+            message: notification.message,
+            createdAt: notification.created_at,
+            readAt: notification.read_at ?? null,
+            relatedChildProfileId: notification.related_child_profile_id ?? null,
+            relatedContentId: notification.related_content_id ?? null,
+          }));
+          const localNotifications = state.guardianNotifications.filter(
+            (item) => !notifications.some((notification) => notification.id === item.id)
+          );
+
+          return {
+            guardianNotifications: [...remoteNotifications, ...localNotifications].slice(0, 30),
           };
         }),
       addChildContentDraft: ({ childProfileId, title, category, photoRequested, publicRequested }) =>

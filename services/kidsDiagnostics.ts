@@ -47,7 +47,7 @@ export function buildKidsIntegrationMap({
       label: 'Perfis infantis',
       state: features.childrenCrud ? 'remoto' : 'local',
       detail: features.childrenCrud
-        ? 'CRUD parcial remoto em /children ja disponivel.'
+        ? 'CRUD remoto em /children disponivel.'
         : 'Perfis infantis ainda em fallback local.',
     },
     {
@@ -79,7 +79,7 @@ export function buildKidsIntegrationMap({
       label: 'Foto infantil',
       state: features.childPhotoUpload ? 'bloqueado' : 'local',
       detail: features.childPhotoUpload
-        ? 'Endpoint remoto existe, mas o uso continua bloqueado por politica conservadora.'
+        ? 'Endpoint e politica remota existem, mas upload segue bloqueado por politica conservadora.'
         : 'Upload remoto ainda nao publicado.',
     },
   ];
@@ -154,7 +154,7 @@ export function buildKidsBackendPendingSnapshot(features: KidsFeatureAvailabilit
         guardianConsents: !features.guardianConsents,
         childContent: !features.childContent,
         guardianNotifications: !features.guardianNotifications,
-        childPhotoOperationalRelease: features.childPhotoUpload,
+        childPhotoOperationalPolicy: features.childPhotoUpload,
       },
     },
     null,

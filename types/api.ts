@@ -119,7 +119,8 @@ export type ChildContentStatus =
   | 'AWAITING_GUARDIAN_APPROVAL'
   | 'GUARDIAN_APPROVED_FOR_PUBLICATION'
   | 'PUBLISHED'
-  | 'REJECTED_BY_GUARDIAN';
+  | 'REJECTED_BY_GUARDIAN'
+  | string;
 
 export type KidsIntegrationMode = 'LOCAL_SAFE' | 'REMOTE_CHILDREN_ONLY' | 'REMOTE_READY';
 
@@ -142,6 +143,9 @@ export type ChildProfileResponse = {
   name: string;
   birth_date: string;
   parent_id: string;
+  photo_url?: string | null;
+  photo_visibility?: string | null;
+  photo_moderation_status?: string | null;
 };
 
 export type ChildProfileUpdateRequest = {
@@ -162,31 +166,31 @@ export type ChildContentDraft = {
 };
 
 export type ChildContentCreateRequest = {
-  child_profile_id: string;
+  child_profile_id?: string | null;
   title: string;
-  description?: string | null;
-  category: ChildContentDraft['category'];
-  photo_requested?: boolean;
+  body?: string | null;
 };
 
 export type ChildContentResponse = {
   id: string;
   guardian_id: string;
-  child_profile_id: string;
+  child_profile_id?: string | null;
   title: string;
-  description?: string | null;
-  category: ChildContentDraft['category'];
-  media_url?: string | null;
-  photo_requested: boolean;
-  public_requested: boolean;
+  body?: string | null;
   status: ChildContentStatus;
+  requested_publication_at?: string | null;
+  reviewed_at?: string | null;
+  reviewed_by_id?: string | null;
+  review_notes?: string | null;
   created_at: string;
-  updated_at?: string | null;
+  updated_at: string;
 };
 
 export type GuardianConsentCreateRequest = {
+  child_profile_id?: string | null;
+  consent_version: string;
   accepted_by_name: string;
-  accepted_by_document?: string | null;
+  accepted_by_document: string;
   relationship: string;
 };
 
@@ -198,8 +202,9 @@ export type GuardianConsentResponse = {
   accepted_at: string;
   relationship: string;
   accepted_by_name: string;
-  accepted_by_document?: string | null;
+  accepted_by_document: string;
   audit_id?: string | null;
+  revoked_at?: string | null;
 };
 
 export type GuardianNotificationItem = {
@@ -227,8 +232,8 @@ export type GuardianNotificationResponse = {
 };
 
 export type GuardianContentReviewRequest = {
-  decision: 'APPROVE' | 'REJECT';
-  decision_reason?: string | null;
+  status: 'GUARDIAN_APPROVED_FOR_PUBLICATION' | 'REJECTED_BY_GUARDIAN' | string;
+  review_notes?: string | null;
 };
 
 export type KidsFeatureAvailability = {
@@ -237,4 +242,16 @@ export type KidsFeatureAvailability = {
   guardianConsents: boolean;
   childContent: boolean;
   guardianNotifications: boolean;
+};
+
+export type PrivacyConsentPayload = {
+  consent_version: string;
+  origin_app?: string | null;
+  app_version?: string | null;
+  platform?: string | null;
+  device_id?: string | null;
+};
+
+export type PrivacyConsentResponse = PrivacyConsentPayload & {
+  accepted_at: string;
 };

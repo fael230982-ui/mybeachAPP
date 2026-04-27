@@ -1,9 +1,10 @@
 import { router } from 'expo-router';
 import React from 'react';
-import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { LEGAL_CONTACT, LEGAL_SUMMARY, LGPD_CONSENT_VERSION } from '@/constants/legal';
 import { hasApiAccessToken } from '@/services/config';
+import { acceptRemotePrivacyConsent } from '@/services/privacy';
 import { useAuthStore } from '@/stores/authStore';
 import { usePrivacyStore } from '@/stores/privacyStore';
 
@@ -24,7 +25,25 @@ export default function PrivacyConsentScreen() {
   const acceptCurrentVersion = usePrivacyStore((state) => state.acceptCurrentVersion);
   const accessToken = useAuthStore((state) => state.accessToken);
 
-  function handleAccept() {
+  async function handleAccept() {
+    if (accessToken) {
+      try {
+        await acceptRemotePrivacyConsent(
+          {
+            consent_version: LGPD_CONSENT_VERSION,
+            origin_app: 'MYBEACH-CIDADAO',
+            platform: 'expo',
+          },
+          accessToken
+        );
+      } catch {
+        Alert.alert(
+          'Aceite local registrado',
+          'Nao foi possivel registrar o aceite remoto agora. O aceite local sera mantido neste aparelho.'
+        );
+      }
+    }
+
     acceptCurrentVersion();
     router.replace(accessToken || hasApiAccessToken() ? '/(tabs)' : '/auth');
   }
@@ -60,7 +79,7 @@ export default function PrivacyConsentScreen() {
         </Text>
       </View>
 
-      <Pressable style={styles.acceptButton} onPress={handleAccept}>
+      <Pressable style={styles.acceptButton} onPress={() => void handleAccept()}>
         <Text style={styles.acceptButtonLabel}>Li e concordo</Text>
       </Pressable>
 

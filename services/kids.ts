@@ -1,4 +1,4 @@
-import { AppError, apiRequest, resolveAuthToken } from './api';
+import { apiRequest, resolveAuthToken } from './api';
 
 import type {
   ChildProfileCreateRequest,
@@ -8,6 +8,8 @@ import type {
   GuardianConsentResponse,
   GuardianContentReviewRequest,
   GuardianNotificationResponse,
+  ChildContentCreateRequest,
+  ChildContentResponse,
   KidsFeatureAvailability,
   KidsIntegrationMode,
 } from '@/types/api';
@@ -22,17 +24,10 @@ type KidsCapabilitySummary = {
 const KIDS_FEATURES_FROM_OPENAPI: KidsFeatureAvailability = {
   childrenCrud: true,
   childPhotoUpload: true,
-  guardianConsents: false,
-  childContent: false,
-  guardianNotifications: false,
+  guardianConsents: true,
+  childContent: true,
+  guardianNotifications: true,
 };
-
-function buildUnsupportedError(feature: string) {
-  return new AppError(
-    `A OpenAPI atual ainda nao publicou endpoint oficial para ${feature}.`,
-    'KIDS_ENDPOINT_NOT_AVAILABLE'
-  );
-}
 
 export function getKidsCapabilitySummary(authToken?: string | null): KidsCapabilitySummary {
   const token = resolveAuthToken(authToken);
@@ -47,10 +42,10 @@ export function getKidsCapabilitySummary(authToken?: string | null): KidsCapabil
   }
 
   return {
-    mode: 'REMOTE_CHILDREN_ONLY',
-    label: 'Modo kids com perfis remotos',
+    mode: 'REMOTE_READY',
+    label: 'Modo kids remoto 1.2',
     reason:
-      'A OpenAPI atual ja suporta perfis infantis e foto em /children, mas ainda nao publicou consentimento, conteudo infantil e notificacoes parentais.',
+      'A API 1.2 publica perfis, consentimento parental, conteudo kids e notificacoes parentais. Foto infantil segue bloqueada por politica operacional conservadora.',
     features: KIDS_FEATURES_FROM_OPENAPI,
   };
 }
@@ -117,48 +112,108 @@ export async function uploadKidsChildPhoto(childId: string, file: Blob, authToke
   });
 }
 
-export async function getCurrentKidsGuardianConsent(_authToken?: string | null): Promise<GuardianConsentResponse> {
-  throw buildUnsupportedError('consentimento parental remoto');
+export async function getKidsChildPhotoPolicy(childId: string, authToken?: string | null) {
+  return apiRequest<Record<string, unknown>>(`/children/${childId}/photo-policy`, {
+    requireAuth: true,
+    authToken,
+  });
+}
+
+export async function getCurrentKidsGuardianConsent(
+  authToken?: string | null,
+  childProfileId?: string | null
+): Promise<GuardianConsentResponse | null> {
+  const query = childProfileId ? `?child_profile_id=${encodeURIComponent(childProfileId)}` : '';
+  return apiRequest<GuardianConsentResponse | null>(`/kids/guardian-consents/current${query}`, {
+    requireAuth: true,
+    authToken,
+  });
 }
 
 export async function createKidsGuardianConsent(
-  _payload: GuardianConsentCreateRequest,
-  _authToken?: string | null
+  payload: GuardianConsentCreateRequest,
+  authToken?: string | null
 ): Promise<GuardianConsentResponse> {
-  throw buildUnsupportedError('registro remoto de consentimento parental');
+  return apiRequest<GuardianConsentResponse>('/kids/guardian-consents', {
+    method: 'POST',
+    requireAuth: true,
+    authToken,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  });
 }
 
-export async function revokeKidsGuardianConsent(_authToken?: string | null): Promise<void> {
-  throw buildUnsupportedError('revogacao remota de consentimento parental');
+export async function revokeKidsGuardianConsent(consentId: string, authToken?: string | null) {
+  return apiRequest<GuardianConsentResponse>('/kids/guardian-consents/revoke', {
+    method: 'POST',
+    requireAuth: true,
+    authToken,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ consent_id: consentId }),
+  });
 }
 
-export async function listKidsContent(_authToken?: string | null): Promise<never> {
-  throw buildUnsupportedError('conteudo infantil remoto');
+export async function listKidsContent(authToken?: string | null) {
+  return apiRequest<ChildContentResponse[]>('/kids/content', {
+    requireAuth: true,
+    authToken,
+  });
 }
 
-export async function createKidsContent(_payload: unknown, _authToken?: string | null): Promise<never> {
-  throw buildUnsupportedError('criacao remota de conteudo infantil');
+export async function createKidsContent(payload: ChildContentCreateRequest, authToken?: string | null) {
+  return apiRequest<ChildContentResponse>('/kids/content', {
+    method: 'POST',
+    requireAuth: true,
+    authToken,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  });
 }
 
-export async function requestKidsContentPublication(_contentId: string, _authToken?: string | null): Promise<never> {
-  throw buildUnsupportedError('pedido remoto de publicacao infantil');
+export async function requestKidsContentPublication(contentId: string, authToken?: string | null) {
+  return apiRequest<ChildContentResponse>(`/kids/content/${contentId}/request-publication`, {
+    method: 'POST',
+    requireAuth: true,
+    authToken,
+  });
 }
 
 export async function reviewKidsContent(
-  _contentId: string,
-  _payload: GuardianContentReviewRequest,
-  _authToken?: string | null
-): Promise<never> {
-  throw buildUnsupportedError('revisao remota de conteudo infantil');
+  contentId: string,
+  payload: GuardianContentReviewRequest,
+  authToken?: string | null
+) {
+  return apiRequest<ChildContentResponse>(`/kids/content/${contentId}/review`, {
+    method: 'POST',
+    requireAuth: true,
+    authToken,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  });
 }
 
-export async function listKidsGuardianNotifications(_authToken?: string | null): Promise<GuardianNotificationResponse[]> {
-  throw buildUnsupportedError('notificacoes parentais remotas');
+export async function listKidsGuardianNotifications(authToken?: string | null): Promise<GuardianNotificationResponse[]> {
+  return apiRequest<GuardianNotificationResponse[]>('/kids/guardian-notifications', {
+    requireAuth: true,
+    authToken,
+  });
 }
 
 export async function markKidsGuardianNotificationRead(
-  _notificationId: string,
-  _authToken?: string | null
-): Promise<void> {
-  throw buildUnsupportedError('leitura remota de notificacoes parentais');
+  notificationId: string,
+  authToken?: string | null
+) {
+  return apiRequest<GuardianNotificationResponse>(`/kids/guardian-notifications/${notificationId}/read`, {
+    method: 'POST',
+    requireAuth: true,
+    authToken,
+  });
 }
