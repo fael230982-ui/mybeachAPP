@@ -148,6 +148,15 @@ export type ChildProfileResponse = {
   photo_moderation_status?: string | null;
 };
 
+export type ChildPhotoPolicyResponse = {
+  child_id: string;
+  owner_parent_id: string;
+  photo_url?: string | null;
+  photo_visibility: string;
+  photo_moderation_status: string;
+  policy: Record<string, unknown>;
+};
+
 export type ChildProfileUpdateRequest = {
   name?: string | null;
   birth_date?: string | null;

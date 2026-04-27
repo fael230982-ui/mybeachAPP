@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-04-27 - Adoção da API Mbeach 1.3
+
+- Atualiza contrato interno para `API Mbeach 1.3`.
+- Tipagem de `ChildPhotoPolicyResponse`.
+- Exibe política remota de foto infantil com campos canônicos.
+- Mantém upload de foto infantil bloqueado até homologação jurídica e operacional.
+
 ## 2026-04-27 - Homologação interna
 
 - Adiciona `npm run validate`.

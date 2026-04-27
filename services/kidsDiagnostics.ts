@@ -79,7 +79,7 @@ export function buildKidsIntegrationMap({
       label: 'Foto infantil',
       state: features.childPhotoUpload ? 'bloqueado' : 'local',
       detail: features.childPhotoUpload
-        ? 'Endpoint e politica remota existem, mas upload segue bloqueado por politica conservadora.'
+        ? 'Endpoint e schema de politica remota existem, mas upload segue bloqueado por politica conservadora.'
         : 'Upload remoto ainda nao publicado.',
     },
   ];

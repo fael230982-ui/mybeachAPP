@@ -327,7 +327,20 @@ export default function AccountScreen() {
       if (remoteProfiles[0]) {
         try {
           const photoPolicy = await getKidsChildPhotoPolicy(remoteProfiles[0].id, accessToken);
-          setChildPhotoPolicyJson(JSON.stringify(photoPolicy, null, 2));
+          setChildPhotoPolicyJson(
+            JSON.stringify(
+              {
+                childId: photoPolicy.child_id,
+                ownerParentId: photoPolicy.owner_parent_id,
+                photoVisibility: photoPolicy.photo_visibility,
+                photoModerationStatus: photoPolicy.photo_moderation_status,
+                hasPhotoUrl: Boolean(photoPolicy.photo_url),
+                policy: photoPolicy.policy,
+              },
+              null,
+              2
+            )
+          );
         } catch {
           setChildPhotoPolicyJson('Politica remota de foto indisponivel para o primeiro perfil sincronizado.');
         }
@@ -883,7 +896,7 @@ export default function AccountScreen() {
           Perfis remotos OpenAPI: {kidsCapability.features.childrenCrud ? 'disponiveis' : 'nao publicados'}
         </Text>
         <Text style={styles.helper}>
-          API 1.2 publica consentimento, conteudo kids e notificacoes parentais. O app usa esses contratos quando ha sessao autenticada.
+          API 1.3 publica consentimento, conteudo kids, notificacoes parentais e politica tipada de foto. O app usa esses contratos quando ha sessao autenticada.
         </Text>
         <TextInput
           value={childProfileNameInput}
@@ -939,7 +952,7 @@ export default function AccountScreen() {
           </Pressable>
         </View>
         <Text style={styles.helper}>
-          O endpoint e a politica remota de foto infantil existem na API 1.2, mas o upload continua bloqueado por politica conservadora ate homologacao juridica e operacional.
+          O endpoint e a politica remota de foto infantil existem na API 1.3, mas o upload continua bloqueado por politica conservadora ate homologacao juridica e operacional.
         </Text>
         {childPhotoPolicyJson ? (
           <Text selectable style={styles.reportBox}>

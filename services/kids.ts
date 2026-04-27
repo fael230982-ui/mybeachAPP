@@ -10,6 +10,7 @@ import type {
   GuardianNotificationResponse,
   ChildContentCreateRequest,
   ChildContentResponse,
+  ChildPhotoPolicyResponse,
   KidsFeatureAvailability,
   KidsIntegrationMode,
 } from '@/types/api';
@@ -45,7 +46,7 @@ export function getKidsCapabilitySummary(authToken?: string | null): KidsCapabil
     mode: 'REMOTE_READY',
     label: 'Modo kids remoto 1.2',
     reason:
-      'A API 1.2 publica perfis, consentimento parental, conteudo kids e notificacoes parentais. Foto infantil segue bloqueada por politica operacional conservadora.',
+      'A API 1.3 publica perfis, consentimento parental, conteudo kids, notificacoes parentais e politica tipada de foto infantil. Upload segue bloqueado por politica operacional conservadora.',
     features: KIDS_FEATURES_FROM_OPENAPI,
   };
 }
@@ -113,7 +114,7 @@ export async function uploadKidsChildPhoto(childId: string, file: Blob, authToke
 }
 
 export async function getKidsChildPhotoPolicy(childId: string, authToken?: string | null) {
-  return apiRequest<Record<string, unknown>>(`/children/${childId}/photo-policy`, {
+  return apiRequest<ChildPhotoPolicyResponse>(`/children/${childId}/photo-policy`, {
     requireAuth: true,
     authToken,
   });
